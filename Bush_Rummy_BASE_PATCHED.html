@@ -1,0 +1,1367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Bush Rummy Score Sheet</title>
+
+<style>
+  :root{
+    --bg:#061b33;
+    --card:#0b2748;
+    --line:rgba(255,255,255,.16);
+    --line2:rgba(255,255,255,.10);
+    --text:#fff;
+    --muted:#b6c6da;
+    --accent:#2aa9ff;
+    --good:#2ecc71;
+    --bad:#ff5a6b;
+    --radius:18px;
+  }
+
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:linear-gradient(180deg,#061b33 0%, #031224 100%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+  }
+  header{
+    padding:14px env(safe-area-inset-right) 10px env(safe-area-inset-left);
+    text-align:center;
+  }
+  h1{margin:0;font-size:20px;letter-spacing:.2px}
+  .sub{margin-top:4px;font-size:13px;color:var(--muted)}
+  main{
+    max-width:1200px;
+    margin:0 auto;
+    padding:10px env(safe-area-inset-right) 90px env(safe-area-inset-left);
+    display:grid;
+    gap:12px;
+  }
+  @media(min-width:980px){
+    main{grid-template-columns: 1.25fr .75fr; align-items:stretch}
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(11,39,72,.92), rgba(8,28,54,.92));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:12px;
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:end}
+  .field{flex:1 1 160px}
+  label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+  input[type="date"], select, input[type="number"], input[type="text"]{
+    width:100%;
+    padding:12px 12px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.18);
+    color:var(--text);
+    font-size:16px;
+    outline:none;
+  }
+/* SURGEON PATCH — Load saved sheet dropdown */
+#nightPicker{
+  background:#071f3d;
+  border:1px solid rgba(255,255,255,.22);
+  color:#ffffff;
+}
+#nightPicker option{
+  background:#071f3d;
+  color:#ffffff;
+}
+
+  input[type="number"]{appearance:textfield}
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
+
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35}
+  .btnbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  button{
+    border:none;
+    border-radius:16px;
+    padding:12px 14px;
+    font-size:16px;
+    font-weight:650;
+    color:#fff;
+    background:rgba(255,255,255,.10);
+    cursor:pointer;
+  }
+  button.primary{background:rgba(42,169,255,.85)}
+  button.good{background:rgba(46,204,113,.85)}
+  button.bad{background:rgba(255,90,107,.85)}
+  button:active{transform:translateY(1px)}
+  .smallbtn{padding:10px 12px; font-size:15px; font-weight:650}
+
+  .sheetTitle{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .sheetTitle h2{margin:0;font-size:16px}
+  .pill{
+    display:inline-flex; gap:8px; align-items:center;
+    padding:6px 10px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:rgba(255,255,255,.06);
+    font-size:12px;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .pill b{color:#fff}
+
+  .tableWrap{
+    overflow:auto;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.03);
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:720px;
+  }
+  thead th{
+    position:sticky; top:0;
+    background:rgba(6,27,51,.95);
+    backdrop-filter: blur(6px);
+    z-index:2;
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:.2px;
+    border-bottom:1px solid var(--line);
+    padding:10px 8px;
+    text-align:center;
+    white-space:nowrap;
+  }
+  tbody td{
+    border-bottom:1px solid var(--line2);
+    padding:8px 6px;
+    text-align:center;
+    vertical-align:middle;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  .dealCell{color:var(--muted); font-weight:650; text-align:center}
+  .dealerCell{
+    font-weight:700;
+    cursor:pointer;
+    user-select:none;
+  }
+  .dealerCell:hover{background:rgba(255,255,255,.04)}
+
+  /* --- per-cell cumulative display --- */
+  .scoreBox{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+  .scoreBox .scoreInput{
+    width:100%;
+    min-width:86px;
+    padding:10px 10px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.18);
+    color:#fff;
+    font-size:16px;
+    text-align:center;
+  }
+  .scoreDelta{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.05;
+    text-align:center;
+    white-space:nowrap;
+  }
+  .scoreDelta b{color:#fff;font-weight:800}
+  .zero{outline:2px solid rgba(46,204,113,.55)}
+
+  tfoot td{
+    padding:10px 8px;
+    font-weight:800;
+    border-top:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    text-align:center;
+    white-space:nowrap;
+  }
+  .leftFoot{color:var(--muted); text-align:left}
+  .win{color:var(--good)}
+  .lose{color:var(--muted)}
+  .kpiGrid{
+    display:grid; gap:10px; grid-template-columns:1fr 1fr;
+  }
+  @media(max-width:520px){ .kpiGrid{grid-template-columns:1fr} }
+  .kpi{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:10px;
+    background:rgba(255,255,255,.04);
+  }
+  .kpi .t{font-size:12px;color:var(--muted)}
+  .kpi .v{font-size:18px;font-weight:900;margin-top:4px}
+  .statsTable{
+    margin-top:10px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+  }
+  .statsTable table{min-width:0}
+  .statsTable thead th{text-align:left}
+  .statsTable td, .statsTable th{padding:10px}
+
+  /* extra blocks */
+  .extraBlock{
+    margin-top:10px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    background:rgba(255,255,255,.03);
+  }
+  .extraBlock table{min-width:0}
+  .extraBlock thead th{
+    position:static;
+    background:rgba(255,255,255,.04);
+    border-bottom:1px solid var(--line);
+    color:var(--muted);
+    text-align:left;
+    padding:10px;
+    font-size:12px;
+    letter-spacing:.2px;
+  }
+  .extraBlock td{
+    border-bottom:1px solid var(--line2);
+    padding:10px;
+    font-size:13px;
+  }
+  .extraBlock tr:last-child td{border-bottom:none}
+  .extraBlock td.val{font-weight:900;color:#fff;text-align:right;white-space:nowrap}
+
+  .nameGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  @media(max-width:520px){ .nameGrid{grid-template-columns:1fr} }
+
+  /* --- Sticky bottom: quick actions --- */
+  /* (REMOVED in Micro-step 1) */
+
+  /* --- Keypad overlay (centered on Stats panel) --- */
+  .keypadOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.35);
+    z-index:9999;
+    display:flex;
+    align-items:flex-start;
+    justify-content:flex-start;
+  }
+  .keypadPanel{
+    position:fixed;
+    width:320px;
+    max-width:92vw;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(11,39,72,.96), rgba(8,28,54,.96));
+    box-shadow:0 16px 48px rgba(0,0,0,.45);
+    padding:12px;
+  }
+  .keypadHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .keypadTitle{font-weight:900}
+  .keypadSub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
+  .keypadDisplay{
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:rgba(0,0,0,.18);
+    padding:12px;
+    font-size:28px;
+    font-weight:950;
+    text-align:center;
+    letter-spacing:.5px;
+    margin-bottom:10px;
+    user-select:none;
+  }
+  .keypadGrid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+  }
+  .kpBtn{
+    border-radius:14px;
+    padding:14px 10px;
+    font-size:18px;
+    font-weight:900;
+    background:rgba(255,255,255,.10);
+    border:1px solid var(--line);
+    color:#fff;
+    cursor:pointer;
+    user-select:none;
+  }
+  .kpBtn:active{transform:translateY(1px)}
+  .kpDel{ background:rgba(46,204,113,.25); border-color:rgba(46,204,113,.55); }
+  .kpEnter{background:rgba(42,169,255,.85);border-color:rgba(42,169,255,.55)}
+  .kpCancel{ background:rgba(241,196,15,.22); border-color:rgba(241,196,15,.55); color:#fff; }
+  .kpFalse{background:rgba(255,90,107,.85);border-color:rgba(255,90,107,.55)}
+  .span2{grid-column:span 2}
+  .hidden{display:none !important;}
+</style>
+</head>
+
+<body>
+<header>
+  <h1>Bush Rummy Score Sheet</h1>
+  <div class="sub">Matches your paper sheet — one night per sheet</div>
+</header>
+
+<main>
+  <!-- LEFT: SHEET -->
+  <section class="card">
+    <div class="row">
+      <div class="field">
+        <label>Night date</label>
+        <input id="nightDate" type="date" />
+      </div>
+      <div class="field">
+        <label>Start dealer (Deal 1)</label>
+        <select id="startDealer">
+          <option value="0">Marty</option>
+          <option value="1">Oma</option>
+          <option value="2">Opa</option>
+          <option value="3">Leigh</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Deals on sheet</label>
+        <select id="dealCount">
+          <option value="15">15 (like your sheet)</option>
+          <option value="20">20</option>
+          <option value="25">25</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btnbar">
+      <button class="primary" id="newNightBtn">Start New Sheet</button>
+      <button class="good" id="saveNightBtn">Save Sheet</button>
+      <button class="smallbtn" id="exportBtn">Export</button>
+      <button class="smallbtn" id="importBtn">Import</button>
+      <input id="importFile" type="file" accept="application/json" style="display:none" />
+      <button class="bad" id="deleteNightBtn">Delete This Sheet</button>
+    </div>
+
+    <div class="hint">
+      Tap the <b>Dealer</b> cell to cycle dealer for that deal (if you need to correct it).<br/>
+      Enter scores. A score of <b>0</b> counts as <span class="win">went out</span>.
+    </div>
+
+    <div style="margin-top:12px" class="sheetTitle">
+      <h2>Sheet</h2>
+      <span class="pill">Winner rule: <b>lowest total among “went out” nights</b></span>
+      <span class="pill">0 = <b>went out</b></span>
+    </div>
+
+    <div class="tableWrap">
+      <table id="sheetTable" aria-label="Bush rummy sheet">
+        <thead>
+          <tr>
+            <th>DEAL</th>
+            <th>DEALER</th>
+            <th id="thP0">MARTY</th>
+            <th id="thP1">OMA</th>
+            <th id="thP2">OPA</th>
+            <th id="thP3">LEIGH</th>
+          </tr>
+        </thead>
+        <tbody id="sheetBody"></tbody>
+        <tfoot>
+          <tr>
+            <td class="leftFoot" colspan="2">TOTAL</td>
+            <td id="tot0">0</td>
+            <td id="tot1">0</td>
+            <td id="tot2">0</td>
+            <td id="tot3">0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="hint" id="winnerLine" style="margin-top:10px"></div>
+  </section>
+
+  <!-- RIGHT: YEAR STATS -->
+  <aside class="card" id="statsPanel">
+    <div class="sheetTitle">
+      <h2>Year Stats</h2>
+      <span class="pill"><span id="yearLabel"></span></span>
+    </div>
+
+    <div class="kpiGrid">
+      <div class="kpi"><div class="t">Sheets (nights) saved</div><div class="v" id="kNights">0</div></div>
+      <div class="kpi"><div class="t">Deals recorded</div><div class="v" id="kDeals">0</div></div>
+      <div class="kpi"><div class="t">Most wins</div><div class="v" id="kMostWins">—</div></div>
+      <div class="kpi"><div class="t">Most outs (0s)</div><div class="v" id="kMostOuts">—</div></div>
+    </div>
+
+    <div class="statsTable">
+      <table aria-label="Player stats">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Wins</th>
+            <th>Outs</th>
+            <th>Total pts</th>
+            <th>Avg / deal</th>
+            <th>Best deal</th>
+            <th>Worst deal</th>
+          </tr>
+        </thead>
+        <tbody id="statsBody"></tbody>
+      </table>
+    </div>
+
+    <!-- EXTRA STATS (below existing Year Stats only) -->
+    <div class="extraBlock" aria-label="Season highlights">
+      <table>
+        <thead>
+          <tr>
+            <th colspan="2">Season Highlights (this year)</th>
+          </tr>
+        </thead>
+        <tbody id="highlightsBody">
+          <tr><td>Most outs (0s)</td><td class="val" id="hMostOuts">—</td></tr>
+          <tr><td>Highest single deal</td><td class="val" id="hHighestDeal">—</td></tr>
+          <tr><td>Lowest deal (non-zero)</td><td class="val" id="hLowestNonZero">—</td></tr>
+          <tr><td>Best avg / deal</td><td class="val" id="hBestAvg">—</td></tr>
+          <tr><td>Most wins</td><td class="val" id="hMostWins">—</td></tr>
+          <tr><td>Longest out streak</td><td class="val" id="hBestStreak">—</td></tr>
+          <tr><td>Highest total points (year)</td><td class="val" id="hHighTotal">—</td></tr>
+          <tr><td>Lowest total points (year)</td><td class="val" id="hLowTotal">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="extraBlock" aria-label="Consistency">
+      <table>
+        <thead>
+          <tr>
+            <th colspan="2">Consistency (this year)</th>
+          </tr>
+        </thead>
+        <tbody id="consistencyBody"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:12px">
+      <label>Player names (editable)</label>
+      <div class="nameGrid">
+        <div class="field"><input id="pName0" type="text" placeholder="Player 1" /></div>
+        <div class="field"><input id="pName1" type="text" placeholder="Player 2" /></div>
+        <div class="field"><input id="pName2" type="text" placeholder="Player 3" /></div>
+        <div class="field"><input id="pName3" type="text" placeholder="Player 4" /></div>
+      </div>
+      <div class="hint">Names and stats reset each 1 January (yearly season).</div>
+    </div>
+
+    <div style="margin-top:12px">
+      <label>Load saved sheet</label>
+      <select id="nightPicker"></select>
+      <div class="hint">Pick a date to load that sheet.</div>
+    </div>
+<!-- DANGER ZONE -->
+<div style="margin-top:20px; border-top:1px solid var(--line); padding-top:12px">
+ 
+  <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+  <div class="hint" style="color:#ff9aa5; text-align:center;">
+    ⚠️ Danger Zone – irreversible action
+  </div>
+  <button class="bad smallbtn" id="deleteAllBtn">
+    Delete ALL Saved Sheets
+  </button>
+</div>
+
+</div>
+
+  
+
+</div>
+
+  </aside>
+</main>
+
+<!-- KEYPAD OVERLAY (centered on Stats panel) -->
+<div id="keypadOverlay" class="keypadOverlay hidden" aria-hidden="true">
+  <div id="keypadPanel" class="keypadPanel" role="dialog" aria-label="Score keypad">
+    <div class="keypadHead">
+      <div class="keypadTitle">Enter score</div>
+      <div class="keypadSub" id="keypadWho">—</div>
+    </div>
+    <div id="keypadDisplay" class="keypadDisplay">0</div>
+
+    <div class="keypadGrid">
+      <button class="kpBtn" data-kp="1">1</button>
+      <button class="kpBtn" data-kp="2">2</button>
+      <button class="kpBtn" data-kp="3">3</button>
+
+      <button class="kpBtn" data-kp="4">4</button>
+      <button class="kpBtn" data-kp="5">5</button>
+      <button class="kpBtn" data-kp="6">6</button>
+
+      <button class="kpBtn" data-kp="7">7</button>
+      <button class="kpBtn" data-kp="8">8</button>
+      <button class="kpBtn" data-kp="9">9</button>
+
+      <button class="kpBtn kpDel" data-kp="DEL">DEL</button>
+      <button class="kpBtn" data-kp="0">0</button>
+      <button class="kpBtn kpEnter" data-kp="ENTER">ENTER</button>
+
+      <button class="kpBtn kpFalse" data-kp="FALSE">False Out (+50)</button>
+      <button class="kpBtn kpCancel span2" data-kp="CANCEL">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- (BOTTOM STICKY BAR REMOVED in Micro-step 1) -->
+
+<script>
+(() => {
+  const KEY = "bush_rummy_sheet_v1";
+  const DEFAULT_PLAYERS = ["Marty","Oma","Opa","Leigh"];
+  const year = new Date().getFullYear();
+  const NAMES_KEY = `bush_rummy_players_${year}`;
+
+  const el = (id) => document.getElementById(id);
+
+  el("yearLabel").textContent = `Year: ${year}`;
+
+  // nights: [{ id, date, startDealer, dealCount, deals: [ { dealer, scores:[n,n,n,n] } ] }]
+  let nights = [];
+  let currentNightId = null;
+
+  // Player names (editable, per year)
+  let playerNames = [...DEFAULT_PLAYERS];
+
+  function nameOf(i){
+    const n = (playerNames && playerNames[i]) ? String(playerNames[i]).trim() : "";
+    return n || DEFAULT_PLAYERS[i] || `Player ${i+1}`;
+  }
+
+  function loadPlayerNames(){
+    try{
+      const raw = localStorage.getItem(NAMES_KEY);
+      const arr = raw ? JSON.parse(raw) : null;
+      if(Array.isArray(arr) && arr.length === 4){
+        playerNames = arr.map((x,i)=> (String(x||"").trim() || DEFAULT_PLAYERS[i]));
+      } else {
+        playerNames = [...DEFAULT_PLAYERS];
+      }
+    } catch(e){
+      playerNames = [...DEFAULT_PLAYERS];
+    }
+  }
+
+  function savePlayerNames(){
+    localStorage.setItem(NAMES_KEY, JSON.stringify(playerNames));
+  }
+
+  function applyPlayerNamesToUI(){
+    // Update Start Dealer dropdown labels
+    const sel = el("startDealer");
+    if(sel && sel.options && sel.options.length >= 4){
+      for(let i=0;i<4;i++){
+        sel.options[i].textContent = nameOf(i);
+      }
+    }
+    // Update sheet header player labels
+    el("thP0").textContent = nameOf(0).toUpperCase();
+    el("thP1").textContent = nameOf(1).toUpperCase();
+    el("thP2").textContent = nameOf(2).toUpperCase();
+    el("thP3").textContent = nameOf(3).toUpperCase();
+
+    // Populate editable name inputs
+    el("pName0").value = nameOf(0);
+    el("pName1").value = nameOf(1);
+    el("pName2").value = nameOf(2);
+    el("pName3").value = nameOf(3);
+  }
+
+  function uid(){
+    return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+  }
+
+  function todayISO(){
+    const d = new Date();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${d.getFullYear()}-${mm}-${dd}`;
+  }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      nights = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(nights)) nights = [];
+      // keep only this year (yearly season reset)
+      nights = nights.filter(n => (n?.date || "").startsWith(String(year)));
+    } catch(e){
+      nights = [];
+    }
+  }
+
+  function save(){
+    localStorage.setItem(KEY, JSON.stringify(nights));
+  }
+
+  function getNightById(id){
+    return nights.find(n => n.id === id) || null;
+  }
+
+  function computeDealer(startDealer, dealIndex){
+    return (startDealer + dealIndex) % 4;
+  }
+
+  function ensureDeals(night){
+    const maxCards = Number(night.dealCount || 15);
+    const count = Math.max(0, maxCards - 2);
+    if(!Array.isArray(night.deals)) night.deals = [];
+    while(night.deals.length < count){
+      const i = night.deals.length;
+      night.deals.push({
+        dealer: computeDealer(Number(night.startDealer || 0), i),
+        scores: [null,null,null,null]
+      });
+    }
+    if(night.deals.length > count){
+      night.deals = night.deals.slice(0, count);
+    }
+  }
+
+  function startNewNight(){
+    const date = el("nightDate").value || todayISO();
+    const startDealer = Number(el("startDealer").value || 0);
+    const dealCount = Number(el("dealCount").value || 15);
+
+    const existing = nights.find(n => n.date === date);
+    if(existing){
+      if(!confirm(`A sheet for ${date} already exists. Replace it?`)) return;
+      nights = nights.filter(n => n.id !== existing.id);
+    }
+
+    const night = { id: uid(), date, startDealer, dealCount, deals: [] };
+    ensureDeals(night);
+    nights.push(night);
+    nights.sort((a,b) => a.date.localeCompare(b.date));
+
+    currentNightId = night.id;
+    save();
+    renderNightPicker();
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function loadNightByDate(date){
+    const night = nights.find(n => n.date === date);
+    if(!night) return;
+    currentNightId = night.id;
+    el("nightDate").value = night.date;
+    el("startDealer").value = String(night.startDealer ?? 0);
+    el("dealCount").value = String(night.dealCount ?? 15);
+    ensureDeals(night);
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function deleteCurrentNight(){
+    const night = getNightById(currentNightId);
+    if(!night){ alert("No sheet loaded."); return; }
+    if(!confirm(`Delete sheet for ${night.date}?`)) return;
+    nights = nights.filter(n => n.id !== night.id);
+    currentNightId = null;
+    save();
+    renderNightPicker();
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function saveCurrentNight(){
+    const night = getNightById(currentNightId);
+    if(!night){ alert("No sheet loaded."); return; }
+
+    const newDate = el("nightDate").value || todayISO();
+    const startDealer = Number(el("startDealer").value || 0);
+    const dealCount = Number(el("dealCount").value || 15);
+
+    const existing = nights.find(n => n.date === newDate && n.id !== night.id);
+    if(existing){
+      if(!confirm(`Another sheet exists for ${newDate}. Replace it?`)) return;
+      nights = nights.filter(n => n.id !== existing.id);
+    }
+
+    night.date = newDate;
+    night.startDealer = startDealer;
+    night.dealCount = dealCount;
+    ensureDeals(night);
+
+    nights.sort((a,b) => a.date.localeCompare(b.date));
+    save();
+
+    /* MICRO-STEP: after saving, reset the live sheet WITHOUT touching saved nights.
+       Year Stats must remain derived from `nights` only. */
+    currentNightId = null;
+    el("nightDate").value = todayISO();
+    el("startDealer").value = "0";
+    el("dealCount").value = "15";
+
+    renderNightPicker();
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function setScore(dealIndex, playerIndex, value){
+    const night = getNightById(currentNightId);
+    if(!night) return;
+    ensureDeals(night);
+
+    const v = (value === "" || value === null || typeof value === "undefined") ? null : Number(value);
+    night.deals[dealIndex].scores[playerIndex] = (Number.isFinite(v) && v >= 0) ? v : null;
+
+    save(); // autosave
+    renderSheet();        // needed for cumulative cell display
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function cycleDealer(dealIndex){
+    const night = getNightById(currentNightId);
+    if(!night) return;
+    ensureDeals(night);
+    night.deals[dealIndex].dealer = (Number(night.deals[dealIndex].dealer || 0) + 1) % 4;
+    save();
+    renderSheet();
+  }
+
+  function totalsForNight(night){
+    const totals = [0,0,0,0];
+    let dealsCounted = 0;
+
+    for(const d of night.deals){
+      const s = d.scores || [];
+      let hasAny = false;
+      for(let i=0;i<4;i++){
+        const v = s[i];
+        if(Number.isFinite(v)){
+          totals[i] += v;
+          hasAny = true;
+        }
+      }
+      if(hasAny) dealsCounted++;
+    }
+    return {totals, dealsCounted};
+  }
+
+  function outsForNight(night){
+    const outs = [0,0,0,0];
+    for(const d of night.deals){
+      for(let i=0;i<4;i++){
+        if(d.scores && d.scores[i] === 0) outs[i] += 1;
+      }
+    }
+    return outs;
+  }
+
+  function winnerForNight(night){
+    const {totals} = totalsForNight(night);
+    const outs = outsForNight(night);
+    const candidates = outs.some(o => o > 0) ? outs.map((o,i)=>o>0?i:-1).filter(i=>i>=0) : [0,1,2,3];
+
+    const anyScore = night.deals.some(d => (d.scores||[]).some(v => Number.isFinite(v)));
+    if(!anyScore) return {winners: [], totals, outs};
+
+    let min = Infinity;
+    for(const i of candidates) min = Math.min(min, totals[i]);
+
+    const winners = candidates.filter(i => totals[i] === min);
+    return {winners, totals, outs};
+  }
+
+  /* =========================
+     KEYPAD (centered on stats panel)
+     ========================= */
+  const kp = {
+    overlay: el("keypadOverlay"),
+    panel: el("keypadPanel"),
+    display: el("keypadDisplay"),
+    who: el("keypadWho")
+  };
+  let kpState = { open:false, deal:null, player:null, str:"" };
+
+  function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+
+  function positionKeypadToStats(){
+    const stats = document.getElementById("statsPanel");
+    const rect = stats ? stats.getBoundingClientRect() : null;
+
+    let x = window.innerWidth/2;
+    let y = window.innerHeight/2;
+
+    if(rect){
+      x = rect.left + rect.width/2;
+      y = rect.top + rect.height/2;
+    }
+
+    // keep inside viewport
+    const w = kp.panel.offsetWidth || 320;
+    const h = kp.panel.offsetHeight || 420;
+    const pad = 12;
+    x = clamp(x, pad + w/2, window.innerWidth - pad - w/2);
+    y = clamp(y, pad + h/2, window.innerHeight - pad - h/2);
+
+    kp.panel.style.left = x + "px";
+    kp.panel.style.top  = y + "px";
+    kp.panel.style.transform = "translate(-50%, -50%)";
+  }
+
+  function kpRender(){
+    const s = kpState.str;
+    kp.display.textContent = (s && s.length) ? s : "0";
+    kp.who.textContent = (kpState.open ? (nameOf(kpState.player) + " • Deal " + (kpState.deal+3)) : "—");
+  }
+
+  function openKeypad(dealIndex, playerIndex, currentRaw){
+    kpState.open = true;
+    kpState.deal = dealIndex;
+    kpState.player = playerIndex;
+    kpState.str = (Number.isFinite(currentRaw) ? String(currentRaw) : "");
+    kp.overlay.classList.remove("hidden");
+    kp.overlay.setAttribute("aria-hidden","false");
+    kpRender();
+    requestAnimationFrame(() => { positionKeypadToStats(); });
+  }
+
+  function closeKeypad(){
+    kpState.open = false;
+    kp.overlay.classList.add("hidden");
+    kp.overlay.setAttribute("aria-hidden","true");
+  }
+
+  function commitKeypad(){
+    const v = (kpState.str === "") ? "" : Number(kpState.str);
+    const di = kpState.deal, pi = kpState.player;
+    closeKeypad();
+    setScore(di, pi, v);
+  }
+
+  kp.overlay.addEventListener("click", (e) => {
+    // click outside panel closes
+    if(e.target === kp.overlay) closeKeypad();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(!kpState.open) return;
+    if(e.key === "Escape"){ e.preventDefault(); closeKeypad(); return; }
+    if(e.key === "Enter"){ e.preventDefault(); commitKeypad(); return; }
+    if(e.key === "Backspace"){ e.preventDefault(); kpState.str = kpState.str.slice(0,-1); kpRender(); return; }
+    if(/^[0-9]$/.test(e.key)){
+      e.preventDefault();
+      if(kpState.str.length < 4){
+        kpState.str = (kpState.str === "0") ? e.key : (kpState.str + e.key);
+        kpRender();
+      }
+    }
+  });
+
+  // keypad button clicks
+  kp.panel.querySelectorAll("[data-kp]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const v = btn.getAttribute("data-kp");
+      if(v === "DEL"){
+        kpState.str = kpState.str.slice(0,-1);
+        kpRender();
+        return;
+      }
+      if(v === "CANCEL"){
+        closeKeypad();
+        return;
+      }
+      if(v === "ENTER"){
+        commitKeypad();
+        return;
+      }
+      if(v === "FALSE"){
+        // False Out = 50 points
+        kpState.str = "50";
+        kpRender();
+        commitKeypad();
+        return;
+      }
+      // digit
+      if(/^[0-9]$/.test(v)){
+        if(kpState.str.length < 4){
+          kpState.str = (kpState.str === "0") ? v : (kpState.str + v);
+          kpRender();
+        }
+      }
+    });
+  });
+
+  function renderSheet(){
+    const body = el("sheetBody");
+    body.innerHTML = "";
+
+    const night = getNightById(currentNightId);
+
+    if(!night){
+      el("winnerLine").textContent = "No sheet loaded. Tap “Start New Sheet”.";
+      ["tot0","tot1","tot2","tot3"].forEach((id)=> el(id).textContent = "0");
+      return;
+    }
+
+    ensureDeals(night);
+
+    // running totals per player as we build rows (for cumulative display)
+    const running = [0,0,0,0];
+
+    for(let r=0;r<night.deals.length;r++){
+      const d = night.deals[r];
+      const tr = document.createElement("tr");
+
+      const tdDeal = document.createElement("td");
+      tdDeal.className = "dealCell";
+      tdDeal.textContent = String(r+3);
+      tr.appendChild(tdDeal);
+
+      const tdDealer = document.createElement("td");
+      tdDealer.className = "dealerCell";
+      tdDealer.textContent = nameOf(d.dealer ?? computeDealer(Number(night.startDealer||0), r));
+      tdDealer.addEventListener("click", () => cycleDealer(r));
+      tr.appendChild(tdDealer);
+
+      for(let c=0;c<4;c++){
+        const td = document.createElement("td");
+
+        const raw = Number.isFinite(d.scores?.[c]) ? d.scores[c] : null;
+        const prior = running[c];
+        const cumulative = (raw === null) ? null : (prior + raw);
+
+        const wrap = document.createElement("div");
+        wrap.className = "scoreBox";
+
+        const inp = document.createElement("input");
+        inp.type = "text";
+        inp.inputMode = "numeric";
+        inp.className = "scoreInput";
+        inp.readOnly = true; // keypad drives entry
+        inp.value = (cumulative === null) ? "" : String(cumulative);
+
+        const delta = document.createElement("div");
+        delta.className = "scoreDelta";
+        if(raw === null){
+          delta.innerHTML = "&nbsp;";
+        } else {
+          delta.innerHTML = `<b>${prior}</b> + ${raw} = <b>${cumulative}</b>`;
+        }
+
+        if(raw === 0) inp.classList.add("zero");
+
+        // Tap/click opens keypad (centered on stats panel). ENTER commits.
+        inp.addEventListener("focus", (e) => { e.preventDefault(); openKeypad(r, c, raw); });
+        inp.addEventListener("click", (e) => { e.preventDefault(); openKeypad(r, c, raw); });
+
+        wrap.appendChild(inp);
+        wrap.appendChild(delta);
+        td.appendChild(wrap);
+        tr.appendChild(td);
+
+        if(raw !== null) running[c] = cumulative;
+      }
+
+      body.appendChild(tr);
+    }
+
+    updateTotalsAndWinner();
+  }
+
+  function updateTotalsAndWinner(){
+    const night = getNightById(currentNightId);
+    if(!night){
+      el("winnerLine").textContent = "No sheet loaded.";
+      return;
+    }
+    const {winners, totals, outs} = winnerForNight(night);
+
+    el("tot0").textContent = String(totals[0] ?? 0);
+    el("tot1").textContent = String(totals[1] ?? 0);
+    el("tot2").textContent = String(totals[2] ?? 0);
+    el("tot3").textContent = String(totals[3] ?? 0);
+
+    const anyScore = night.deals.some(d => (d.scores||[]).some(v => Number.isFinite(v)));
+    if(!anyScore){
+      el("winnerLine").textContent = "Enter scores to see totals + winner.";
+      return;
+    }
+
+    const outsLine = `Outs (0s): ${nameOf(0)} ${outs[0]}, ${nameOf(1)} ${outs[1]}, ${nameOf(2)} ${outs[2]}, ${nameOf(3)} ${outs[3]}`;
+    if(!winners.length){
+      el("winnerLine").textContent = outsLine;
+      return;
+    }
+    const winNames = winners.map(i => nameOf(i)).join(" & ");
+    el("winnerLine").innerHTML = `<span class="win"><b>Winner:</b> ${winNames}</span> • ${outsLine}`;
+  }
+
+  function renderNightPicker(){
+    const picker = el("nightPicker");
+    picker.innerHTML = "";
+
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = nights.length ? "Select a saved date…" : "No saved sheets yet";
+    picker.appendChild(opt0);
+
+    for(const n of nights){
+      const o = document.createElement("option");
+      o.value = n.date;
+      o.textContent = n.date;
+      picker.appendChild(o);
+    }
+
+    picker.onchange = () => { if(picker.value) loadNightByDate(picker.value); };
+
+    const night = getNightById(currentNightId);
+    picker.value = night ? night.date : "";
+  }
+
+  function renderYearStats(){
+    const stats = DEFAULT_PLAYERS.map((_,i) => ({
+      name: nameOf(i), wins:0, outs:0, totalPts:0, deals:0, bestDeal:null, worstDeal:null
+    }));
+
+    let totalDeals = 0;
+
+    for(const n of nights){
+      ensureDeals(n);
+      const {dealsCounted} = totalsForNight(n);
+      totalDeals += dealsCounted;
+
+      for(const d of n.deals){
+        const hasAny = (d.scores||[]).some(v => Number.isFinite(v));
+        if(!hasAny) continue;
+
+        for(let i=0;i<4;i++){
+          const v = d.scores?.[i];
+          if(Number.isFinite(v)){
+            stats[i].totalPts += v;
+            stats[i].deals += 1;
+            stats[i].bestDeal = (stats[i].bestDeal === null) ? v : Math.min(stats[i].bestDeal, v);
+            stats[i].worstDeal = (stats[i].worstDeal === null) ? v : Math.max(stats[i].worstDeal, v);
+            if(v === 0) stats[i].outs += 1;
+          }
+        }
+      }
+
+      const win = winnerForNight(n);
+      if(win.winners && win.winners.length){
+        for(const wi of win.winners) stats[wi].wins += 1;
+      }
+    }
+
+    el("kNights").textContent = String(nights.length);
+    el("kDeals").textContent = String(totalDeals);
+
+    const maxWins = Math.max(0, ...stats.map(s => s.wins));
+    const maxOuts = Math.max(0, ...stats.map(s => s.outs));
+    const mostWinsNames = stats.filter(s => s.wins === maxWins && maxWins>0).map(s => s.name).join(" & ") || "—";
+    const mostOutsNames = stats.filter(s => s.outs === maxOuts && maxOuts>0).map(s => s.name).join(" & ") || "—";
+    el("kMostWins").textContent = (maxWins>0) ? `${mostWinsNames} (${maxWins})` : "—";
+    el("kMostOuts").textContent = (maxOuts>0) ? `${mostOutsNames} (${maxOuts})` : "—";
+
+    const tbody = el("statsBody");
+    tbody.innerHTML = "";
+    for(const s of stats){
+      const tr = document.createElement("tr");
+      const avg = s.deals ? (s.totalPts / s.deals).toFixed(1) : "—";
+      tr.innerHTML = `
+        <td>${s.name}</td>
+        <td class="${s.wins ? 'win' : 'lose'}">${s.wins}</td>
+        <td>${s.outs}</td>
+        <td>${s.totalPts}</td>
+        <td>${avg}</td>
+        <td>${s.bestDeal === null ? "—" : s.bestDeal}</td>
+        <td>${s.worstDeal === null ? "—" : s.worstDeal}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function renderExtraStats(){
+    // Recompute year aggregates using same approach as renderYearStats, but store per-player vectors for highlights/consistency.
+    const P = [0,1,2,3];
+    const totals = [0,0,0,0];
+    const outs = [0,0,0,0];
+    const wins = [0,0,0,0];
+
+    let anyDeals = false;
+
+    // streaks for outs (consecutive deals with 0)
+    const bestStreak = [0,0,0,0];
+    const curStreak = [0,0,0,0];
+
+    // best average (lower is better)
+    const dealCounts = [0,0,0,0];
+
+    // highest single deal (max value)
+    let highestDealVal = null;
+    let highestDealWho = [];
+
+    // lowest non-zero deal (min >0)
+    let lowestNonZeroVal = null;
+    let lowestNonZeroWho = [];
+
+    for(const n of nights){
+      ensureDeals(n);
+
+      // night winner(s)
+      const w = winnerForNight(n);
+      if(w.winners && w.winners.length){
+        for(const wi of w.winners) wins[wi] += 1;
+      }
+
+      for(const d of n.deals){
+        const hasAny = (d.scores||[]).some(v => Number.isFinite(v));
+        if(!hasAny) continue;
+        anyDeals = true;
+
+        for(const i of P){
+          const v = d.scores?.[i];
+          if(Number.isFinite(v)){
+            totals[i] += v;
+            dealCounts[i] += 1;
+            if(v === 0){
+              outs[i] += 1;
+              curStreak[i] += 1;
+              bestStreak[i] = Math.max(bestStreak[i], curStreak[i]);
+            } else {
+              curStreak[i] = 0;
+              if(v > 0){
+                if(lowestNonZeroVal === null || v < lowestNonZeroVal){
+                  lowestNonZeroVal = v;
+                  lowestNonZeroWho = [i];
+                } else if(v === lowestNonZeroVal){
+                  if(!lowestNonZeroWho.includes(i)) lowestNonZeroWho.push(i);
+                }
+              }
+            }
+
+            if(highestDealVal === null || v > highestDealVal){
+              highestDealVal = v;
+              highestDealWho = [i];
+            } else if(v === highestDealVal){
+              if(!highestDealWho.includes(i)) highestDealWho.push(i);
+            }
+          } else {
+            // not entered -> break streak only when moving deal? keep as-is.
+            curStreak[i] = curStreak[i];
+          }
+        }
+      }
+    }
+
+    // Most outs
+    const maxOuts = Math.max(0, ...outs);
+    el("hMostOuts").textContent = (anyDeals && maxOuts>0) ? `${outs.map((o,i)=>o===maxOuts?nameOf(i):null).filter(Boolean).join(" & ")} (${maxOuts})` : "—";
+
+    // Highest single deal
+    el("hHighestDeal").textContent = (anyDeals && highestDealVal !== null) ? `${highestDealWho.map(nameOf).join(" & ")} (${highestDealVal})` : "—";
+
+    // Lowest deal (non-zero)
+    el("hLowestNonZero").textContent = (anyDeals && lowestNonZeroVal !== null) ? `${lowestNonZeroWho.map(nameOf).join(" & ")} (${lowestNonZeroVal})` : "—";
+
+    // Best average
+    let bestAvg = null, bestAvgWho = [];
+    for(const i of P){
+      if(dealCounts[i] > 0){
+        const avg = totals[i] / dealCounts[i];
+        if(bestAvg === null || avg < bestAvg){
+          bestAvg = avg;
+          bestAvgWho = [i];
+        } else if(avg === bestAvg){
+          bestAvgWho.push(i);
+        }
+      }
+    }
+    el("hBestAvg").textContent = (anyDeals && bestAvg !== null) ? `${bestAvgWho.map(nameOf).join(" & ")} (${bestAvg.toFixed(1)})` : "—";
+
+    // Most wins
+    const maxWins = Math.max(0, ...wins);
+    el("hMostWins").textContent = (anyDeals && maxWins>0) ? `${wins.map((w,i)=>w===maxWins?nameOf(i):null).filter(Boolean).join(" & ")} (${maxWins})` : "—";
+
+    // Longest out streak
+    const maxStreak = Math.max(0, ...bestStreak);
+    el("hBestStreak").textContent = (anyDeals && maxStreak>0) ? `${bestStreak.map((s,i)=>s===maxStreak?nameOf(i):null).filter(Boolean).join(" & ")} (${maxStreak})` : "—";
+
+    // Highest / lowest total points (year)
+    if(anyDeals){
+      const maxTotal = Math.max(...totals);
+      const minTotal = Math.min(...totals);
+      const highNames = totals.map((t,i)=> t===maxTotal ? nameOf(i) : null).filter(Boolean).join(" & ");
+      const lowNames  = totals.map((t,i)=> t===minTotal ? nameOf(i) : null).filter(Boolean).join(" & ");
+      el("hHighTotal").textContent = `${highNames} (${maxTotal})`;
+      el("hLowTotal").textContent  = `${lowNames} (${minTotal})`;
+    } else {
+      el("hHighTotal").textContent = "—";
+      el("hLowTotal").textContent  = "—";
+    }
+
+    // Consistency table (simple: avg + outs rate)
+    const cbody = el("consistencyBody");
+    cbody.innerHTML = "";
+    for(const i of P){
+      const avg = dealCounts[i] ? (totals[i] / dealCounts[i]) : null;
+      const outRate = dealCounts[i] ? (outs[i] / dealCounts[i] * 100) : null;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${nameOf(i)}</td>
+        <td class="val">
+          ${dealCounts[i] ? (avg.toFixed(1) + " avg • " + outs[i] + " outs • " + outRate.toFixed(0) + "% out rate") : "—"}
+        </td>
+      `;
+      cbody.appendChild(tr);
+    }
+  }
+
+  function focusNextEmpty(){
+    const night = getNightById(currentNightId);
+    if(!night){ alert("Start a sheet first."); return; }
+    ensureDeals(night);
+
+    for(let r=0;r<night.deals.length;r++){
+      for(let c=0;c<4;c++){
+        const v = night.deals[r].scores?.[c];
+        if(!Number.isFinite(v)){
+          const body = el("sheetBody");
+          const tr = body.children[r];
+          const td = tr.children[2 + c];
+          const inp = td.querySelector("input");
+          if(inp){ inp.focus(); inp.scrollIntoView({block:"center"}); }
+          return;
+        }
+      }
+    }
+    alert("No empty scores found.");
+  }
+
+  function exportJSON(){
+    const blob = new Blob([JSON.stringify({
+      app:"BushRummySheet",
+      year,
+      exportedAt: new Date().toISOString(),
+      nights,
+      playerNames
+    }, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bush_rummy_${year}_sheets.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function importJSON(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(reader.result);
+        const incoming = data?.nights;
+        if(!Array.isArray(incoming)) throw new Error("Invalid file");
+        for(const n of incoming){
+          if(!n?.date || !String(n.date).startsWith(String(year))) continue;
+          nights = nights.filter(x => x.date !== n.date);
+          nights.push(n);
+        }
+        nights.sort((a,b) => a.date.localeCompare(b.date));
+        save();
+        renderNightPicker();
+        renderSheet();
+        renderYearStats();
+        renderExtraStats();
+        alert("Import complete.");
+      } catch(e){
+        alert("Import failed.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Wire
+  el("newNightBtn").addEventListener("click", startNewNight);
+  el("saveNightBtn").addEventListener("click", saveCurrentNight);
+  el("deleteNightBtn").addEventListener("click", deleteCurrentNight);
+// DANGER ZONE — delete ALL saved sheets
+el("deleteAllBtn").addEventListener("click", () => {
+  const first = confirm(
+    "WARNING:\nThis will permanently delete ALL saved Bush Rummy sheets.\n\nDo you want to continue?"
+  );
+  if (!first) return;
+
+  const second = confirm(
+    "FINAL CONFIRMATION:\nThis action CANNOT be undone.\n\nDelete everything?"
+  );
+  if (!second) return;
+
+  localStorage.removeItem(KEY);
+  alert("All saved Bush Rummy sheets have been deleted.");
+  location.reload();
+});
+
+
+  el("exportBtn").addEventListener("click", exportJSON);
+  el("importBtn").addEventListener("click", () => el("importFile").click());
+  el("importFile").addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(f) importJSON(f);
+    e.target.value = "";
+  });
+
+  // Player name editing (per-year)
+  function onNameChange(){
+    playerNames = [el("pName0").value, el("pName1").value, el("pName2").value, el("pName3").value]
+      .map((x,i)=> (String(x||"").trim() || DEFAULT_PLAYERS[i]));
+    savePlayerNames();
+    applyPlayerNamesToUI();
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+  ["pName0","pName1","pName2","pName3"].forEach((id)=> {
+    el(id).addEventListener("change", onNameChange);
+    el(id).addEventListener("blur", onNameChange);
+  });
+
+  // Init
+  loadPlayerNames();
+  load();
+  el("nightDate").value = todayISO();
+  el("startDealer").value = "0";
+  el("dealCount").value = "15";
+
+  // Auto-load latest sheet if exists
+  if(nights.length){
+    const last = nights[nights.length - 1];
+    currentNightId = last.id;
+    el("nightDate").value = last.date;
+    el("startDealer").value = String(last.startDealer ?? 0);
+    el("dealCount").value = String(last.dealCount ?? 15);
+  }
+
+  applyPlayerNamesToUI();
+  renderNightPicker();
+  renderSheet();
+  renderYearStats();
+  renderExtraStats();
+
+  // Reposition keypad on resize/orientation changes (if open)
+  window.addEventListener("resize", () => { if(kpState.open) positionKeypadToStats(); });
+})();
+</script>
+</body>
+</html>

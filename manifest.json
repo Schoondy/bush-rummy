@@ -1,0 +1,22 @@
+{
+  "name": "Bush Rummy",
+  "short_name": "Bush Rummy",
+  "description": "Bush Rummy score sheet - simple offline card game scoring.",
+  "start_url": "Bush_Rummy_BASE_PATCHED.html",
+  "display": "standalone",
+  "background_color": "#061b33",
+  "theme_color": "#061b33",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
