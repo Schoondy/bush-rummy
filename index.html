@@ -4,10 +4,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Bush Rummy Score Sheet</title>
-  <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-
 
 <style>
   :root{
@@ -20,25 +16,28 @@
     --accent:#2aa9ff;
     --good:#2ecc71;
     --bad:#ff5a6b;
+    --warn:#f1c40f;
     --radius:18px;
   }
 
-
   *{box-sizing:border-box}
+  html{background:#000;}
   body{
     margin:0;
-    background:linear-gradient(180deg,#061b33 0%, #031224 100%);
+    background:#000;
     color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
   }
   header{
     padding:14px env(safe-area-inset-right) 10px env(safe-area-inset-left);
     text-align:center;
+    background:#000;
+    border-bottom:1px solid rgba(255,255,255,.10);
   }
   h1{margin:0;font-size:20px;letter-spacing:.2px}
   .sub{margin-top:4px;font-size:13px;color:var(--muted)}
   main{
-    max-width:1200px;
+    max-width:1400px;
     margin:0 auto;
     padding:10px env(safe-area-inset-right) 90px env(safe-area-inset-left);
     display:grid;
@@ -54,6 +53,10 @@
     padding:12px;
   }
   .row{display:flex; gap:10px; flex-wrap:wrap; align-items:end}
+  .topControls{justify-content:center}
+  .topControls .field{flex:0 1 220px; max-width:260px}
+  .topControls label{ text-align:center }
+  .topControls input[type="date"], .topControls select{ text-align:center }
   .field{flex:1 1 160px}
   label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
   input[type="date"], select, input[type="number"], input[type="text"]{
@@ -66,23 +69,12 @@
     font-size:16px;
     outline:none;
   }
-/* SURGEON PATCH — Load saved sheet dropdown */
-#nightPicker{
-  background:#071f3d;
-  border:1px solid rgba(255,255,255,.22);
-  color:#ffffff;
-}
-#nightPicker option{
-  background:#071f3d;
-  color:#ffffff;
-}
-
   input[type="number"]{appearance:textfield}
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
 
   .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35}
-  .btnbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .btnbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; justify-content:center}
   button{
     border:none;
     border-radius:16px;
@@ -96,10 +88,24 @@
   button.primary{background:rgba(42,169,255,.85)}
   button.good{background:rgba(46,204,113,.85)}
   button.bad{background:rgba(255,90,107,.85)}
+  button.export{background:rgba(123,77,255,.92)}
+  button.import{background:rgba(211,84,0,.92)}
+  button.print{background:rgba(255,255,255,.12); border:1px solid var(--line)}
+  button.warn{background:rgba(241,196,15,.30)}
   button:active{transform:translateY(1px)}
   .smallbtn{padding:10px 12px; font-size:15px; font-weight:650}
 
-  .sheetTitle{
+  
+  .applyBig{
+    background: var(--accent);
+    border-color: rgba(255,255,255,.20);
+    padding: 20px 36px;
+    font-size: 18px;
+    font-weight: 800;
+    min-width: 240px;
+  }
+  .applyBig:hover{ filter: brightness(1.08); }
+.sheetTitle{
     display:flex; align-items:center; justify-content:space-between;
     gap:10px; flex-wrap:wrap;
     margin-bottom:8px;
@@ -126,7 +132,7 @@
   table{
     width:100%;
     border-collapse:collapse;
-    min-width:720px;
+    min-width:860px;
   }
   thead th{
     position:sticky; top:0;
@@ -156,7 +162,7 @@
   }
   .dealerCell:hover{background:rgba(255,255,255,.04)}
 
-  /* --- per-cell cumulative display --- */
+  /* per-cell cumulative display */
   .scoreBox{display:flex;flex-direction:column;gap:6px;align-items:stretch}
   .scoreBox .scoreInput{
     width:100%;
@@ -190,6 +196,7 @@
   .leftFoot{color:var(--muted); text-align:left}
   .win{color:var(--good)}
   .lose{color:var(--muted)}
+
   .kpiGrid{
     display:grid; gap:10px; grid-template-columns:1fr 1fr;
   }
@@ -202,17 +209,17 @@
   }
   .kpi .t{font-size:12px;color:var(--muted)}
   .kpi .v{font-size:18px;font-weight:900;margin-top:4px}
+
   .statsTable{
     margin-top:10px;
     border:1px solid var(--line);
     border-radius:14px;
-    overflow:hidden;
+    overflow:auto;
   }
-  .statsTable table{min-width:0}
+  .statsTable table{min-width:720px}
   .statsTable thead th{text-align:left}
   .statsTable td, .statsTable th{padding:10px}
 
-  /* extra blocks */
   .extraBlock{
     margin-top:10px;
     border:1px solid var(--line);
@@ -239,13 +246,88 @@
   .extraBlock tr:last-child td{border-bottom:none}
   .extraBlock td.val{font-weight:900;color:#fff;text-align:right;white-space:nowrap}
 
-  .nameGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
-  @media(max-width:520px){ .nameGrid{grid-template-columns:1fr} }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:520px){ .grid2{grid-template-columns:1fr} }
 
-  /* --- Sticky bottom: quick actions --- */
-  /* (REMOVED in Micro-step 1) */
+  .registrySlot{display:flex;gap:8px;align-items:center}
+  .registrySlot input{flex:1 1 auto}
+  .registrySlot button{flex:0 0 auto}
 
-  /* --- Keypad overlay (centered on Stats panel) --- */
+  .seatingRow{
+    display:grid;
+    grid-template-columns: 1fr 120px 92px;
+    gap:10px;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid var(--line2);
+  }
+  .seatingRow:last-child{border-bottom:none}
+  .seatTag{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .seatingName{
+    font-weight:800;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .seatSelect{
+    padding:10px 10px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.18);
+    color:#fff;
+    font-size:15px;
+  }
+  .seatWarn{
+    outline:2px solid rgba(241,196,15,.55);
+    border-color:rgba(241,196,15,.55) !important;
+  }
+  .seatBad{
+    outline:2px solid rgba(255,90,107,.55);
+    border-color:rgba(255,90,107,.55) !important;
+  }
+
+  /* Load picker */
+  #sessionPicker{
+    background:#071f3d;
+    border:1px solid rgba(255,255,255,.22);
+    color:#ffffff;
+  }
+  #sessionPicker option{
+    background:#071f3d;
+    color:#ffffff;
+  }
+
+  #startDealer{
+    background:#071f3d;
+    border:1px solid rgba(255,255,255,.22);
+    color:#ffffff;
+  }
+/* Players this game dropdown (make list dark blue) */
+#playerCount{
+  background:#071f3d;
+  border:1px solid rgba(255,255,255,.22);
+  color:#ffffff;
+}
+#playerCount option{
+  background:#071f3d;
+  color:#ffffff;
+}
+
+/* Seating dropdown option lists (make list dark blue) */
+.seatSelect option{
+  background:#071f3d;
+  color:#ffffff;
+}
+
+  #startDealer option{
+    background:#071f3d;
+    color:#ffffff;
+  }
+
+  /* Keypad overlay */
   .keypadOverlay{
     position:fixed;
     inset:0;
@@ -297,105 +379,495 @@
     user-select:none;
   }
   .kpBtn:active{transform:translateY(1px)}
-  .kpDel{ background:rgba(46,204,113,.25); border-color:rgba(46,204,113,.55); }
+  .kpDel{ background:rgba(46,204,113,.88); border-color:rgba(46,204,113,1); }
   .kpEnter{background:rgba(42,169,255,.85);border-color:rgba(42,169,255,.55)}
-  .kpCancel{ background:rgba(241,196,15,.22); border-color:rgba(241,196,15,.55); color:#fff; }
+  .kpCancel{ background:rgba(241,196,15,.96); border-color:rgba(241,196,15,1); color:#000; }
   .kpFalse{background:rgba(255,90,107,.85);border-color:rgba(255,90,107,.55)}
   .span2{grid-column:span 2}
+  .span3{grid-column:span 3}
   .hidden{display:none !important;}
+
+  /* Player Stats Modal (Phase 2A) */
+  .modalOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:9998;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  }
+  .modalPanel{
+    width:min(520px, 96vw);
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(11,39,72,.98), rgba(8,28,54,.98));
+    box-shadow:0 16px 48px rgba(0,0,0,.55);
+    padding:12px;
+  }
+  .modalHead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .modalTitle{
+    font-size:16px;
+    font-weight:950;
+    letter-spacing:.2px;
+    margin:0;
+  }
+  .modalCloseBtn{
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.08);
+    border-radius:14px;
+    padding:10px 12px;
+    font-size:14px;
+    font-weight:900;
+    color:#fff;
+    cursor:pointer;
+  }
+  .modalCloseBtn:active{transform:translateY(1px)}
+  .modalSub{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .modalGrid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  @media(max-width:520px){ .modalGrid{ grid-template-columns:1fr; } }
+  .modalKpi{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:10px;
+    background:rgba(255,255,255,.04);
+  }
+  .modalKpi .t{font-size:12px;color:var(--muted)}
+  .modalKpi .v{font-size:18px;font-weight:950;margin-top:4px}
+  .playerLink{
+    color:#fff;
+    font-weight:900;
+    cursor:pointer;
+    text-decoration:none;
+  }
+  .playerLink:hover{ text-decoration:underline; }
+
+
+
+  /* PRINT / PDF (black text on white background) */
+
+
+  /* Mirror key print rules on-screen while preparing Print/PDF (for accurate auto-scaling) */
+  body.printing{
+    background:#fff !important;
+    color:#000 !important;
+  }
+  body.printing header{
+    background:#fff !important;
+    color:#000 !important;
+    padding:0 0 10mm 0 !important;
+    text-align:left !important;
+  }
+  body.printing .sub{ color:#000 !important; }
+  body.printing main{
+    display:block !important;
+    max-width:none !important;
+    padding:0 !important;
+    gap:0 !important;
+  }
+  body.printing #statsPanel{ display:none !important; }
+  body.printing .btnbar, body.printing .modalOverlay{ display:none !important; }
+  body.printing .card{
+    background:#fff !important;
+    border:1px solid #000 !important;
+    box-shadow:none !important;
+    border-radius:0 !important;
+  }
+  body.printing label,
+  body.printing .pill,
+  body.printing .sheetTitle h2,
+  body.printing .hint,
+  body.printing .win,
+  body.printing .lose{
+    color:#000 !important;
+  }
+  body.printing input[type="date"],
+  body.printing select,
+  body.printing input[type="number"],
+  body.printing input[type="text"]{
+    background:#fff !important;
+    color:#000 !important;
+    border:1px solid #000 !important;
+  }
+  body.printing table{
+    width:100% !important;
+    border-collapse:collapse !important;
+    table-layout:fixed !important;
+  }
+  body.printing th,
+  body.printing td{
+    border:1px solid #000 !important;
+    background:#fff !important;
+    color:#000 !important;
+  }
+  body.printing *{
+    text-shadow:none !important;
+    box-shadow:none !important;
+  }
+
+  body.printing{
+    zoom: var(--printZoom, 1);
+  }
+
+  body.printing h1{ font-size:16px !important; margin:0 0 2mm 0 !important; }
+  body.printing .sub{ font-size:10px !important; margin-top:2px !important; }
+  body.printing .row{ gap:6px !important; }
+  body.printing .field{ flex:1 1 120px !important; }
+  body.printing label{ font-size:10px !important; margin:0 0 4px !important; text-align:center !important; }
+  body.printing input[type="date"], body.printing select, body.printing input[type="number"], body.printing input[type="text"]{
+    padding:6px 8px !important;
+    font-size:12px !important;
+    border-radius:10px !important;
+  }
+  body.printing .hint{ font-size:10px !important; margin-top:6px !important; }
+  body.printing .sheetTitle{ margin-top:8px !important; }
+  body.printing .sheetTitle h2{ font-size:13px !important; }
+  body.printing .pill{ font-size:10px !important; padding:4px 8px !important; border-radius:999px !important; }
+  body.printing .tableWrap{ overflow:visible !important; }
+  body.printing th, body.printing td{ padding:6px 4px !important; font-size:10px !important; white-space:nowrap !important; }
+  body.printing .scoreBox{ gap:2px !important; }
+  body.printing .scoreBox .scoreInput{ min-width:0 !important; padding:4px 4px !important; font-size:11px !important; border-radius:10px !important; }
+  body.printing .scoreDelta{ font-size:8px !important; color:#000 !important; white-space:nowrap !important; }
+  body.printing .scoreDelta b{ color:#000 !important; }
+  body.printing #winnerLine{ font-size:10px !important; }
+  @media print{
+    
+    #chartsSection, #chartZoomOverlay{ display:none !important; }
+@page{ size: A4 portrait; margin: 12mm; }
+    html, body{
+      background:#fff !important;
+      color:#000 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Layout: print the score sheet only */
+    main{
+      display:block !important;
+      max-width:none !important;
+      padding:0 !important;
+      gap:0 !important;
+    }
+    #statsPanel{ display:none !important; }
+    .btnbar, .modalOverlay{ display:none !important; }
+
+    header{
+      background:#fff !important;
+      color:#000 !important;
+      padding:0 0 10mm 0 !important;
+      text-align:left !important;
+    }
+    .sub{ color:#000 !important; }
+
+    .card{
+      background:#fff !important;
+      border:1px solid #000 !important;
+      box-shadow:none !important;
+      border-radius:0 !important;
+    }
+
+    label, .pill, .sheetTitle h2, .hint, .win, .lose{
+      color:#000 !important;
+    }
+
+    input[type="date"], select, input[type="number"], input[type="text"]{
+      background:#fff !important;
+      color:#000 !important;
+      border:1px solid #000 !important;
+    }
+
+    table{
+      width:100% !important;
+      border-collapse:collapse !important;
+    }
+    th, td{
+      border:1px solid #000 !important;
+      background:#fff !important;
+      color:#000 !important;
+    }
+
+
+
+    /* Compact layout so the whole game fits on ONE A4 page */
+    :root{ --printZoom: 1; --printMarginMm: 12; }
+    body{ zoom: var(--printZoom); }
+
+    h1{ font-size:16px !important; margin:0 0 2mm 0 !important; }
+    .sub{ font-size:10px !important; margin-top:2px !important; }
+
+    .row{ gap:6px !important; }
+    .field{ flex:1 1 120px !important; }
+    label{ font-size:10px !important; margin:0 0 4px !important; text-align:center !important; }
+
+    input[type="date"], select, input[type="number"], input[type="text"]{
+      padding:6px 8px !important;
+      font-size:12px !important;
+      border-radius:10px !important;
+    }
+
+    .hint{ font-size:10px !important; margin-top:6px !important; }
+
+    .sheetTitle{ margin-top:8px !important; }
+    .sheetTitle h2{ font-size:13px !important; }
+    .pill{ font-size:10px !important; padding:4px 8px !important; border-radius:999px !important; }
+
+    .tableWrap{ overflow:visible !important; }
+    table{ table-layout:fixed !important; }
+    thead th{ font-size:10px !important; }
+
+    th, td{
+      padding:6px 4px !important;
+      font-size:10px !important;
+      white-space:nowrap !important;
+    }
+
+    /* Allow all seats to fit on the page (no min-width forcing horizontal clipping) */
+    .scoreBox{ gap:2px !important; }
+    .scoreBox .scoreInput{
+      min-width:0 !important;
+      padding:4px 4px !important;
+      font-size:11px !important;
+      border-radius:10px !important;
+    }
+    .scoreDelta{
+      font-size:8px !important;
+      color:#000 !important;
+      white-space:nowrap !important;
+    }
+    .scoreDelta b{ color:#000 !important; }
+
+    /* Winner line */
+    #winnerLine{ font-size:10px !important; }
+
+    /* Remove decorative gradients */
+    *{
+      text-shadow:none !important;
+      box-shadow:none !important;
+    }
+  }
+
+
+  /* Charts (this game) */
+  .chartsSection{ margin-top:14px; }
+  .chartGrid{ display:grid; grid-template-columns:1fr; gap:10px; }
+  @media(min-width:980px){ .chartGrid{ grid-template-columns:1fr 1fr; } }
+  .chartCard{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:10px;
+    background:rgba(0,0,0,.14);
+    cursor:pointer;
+    position:relative;
+  }
+  .chartHead{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .chartName{ font-size:12px; color:var(--muted); font-weight:900; letter-spacing:.2px; }
+  .chartSub{ font-size:11px; color:rgba(255,255,255,.65); margin-top:2px; font-weight:650; }
+  .chartControls{ display:flex; align-items:center; gap:6px; }
+  .chartControls .miniLabel{ font-size:11px; color:var(--muted); font-weight:800; }
+  .chartControls select{
+    width:auto;
+    padding:6px 8px;
+    border-radius:10px;
+    font-size:12px;
+  }
+  .chartCard canvas{ width:100%; height:220px; display:block; border-radius:12px; }
+  @media(max-width:520px){ .chartCard canvas{ height:200px; } }
+
+  /* Zoom */
+  #chartZoomOverlay.hidden{ display:none !important; }
+  #chartZoomOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  }
+  .chartZoomPanel{
+    width:min(1100px, 96vw);
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(11,39,72,.98), rgba(8,28,54,.98));
+    box-shadow:0 18px 60px rgba(0,0,0,.6);
+    padding:12px;
+  }
+  .chartZoomHead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .chartZoomTitle{
+    font-size:15px;
+    font-weight:950;
+    letter-spacing:.2px;
+    margin:0;
+  }
+  #chartZoomCanvas{ width:100%; height:min(70vh, 720px); display:block; border-radius:14px; }
+
+
 </style>
 </head>
 
 <body>
 <header>
   <h1>Bush Rummy Score Sheet</h1>
-  <div class="sub">Matches your paper sheet — one night per sheet</div>
+  <div class="sub">Offline • Single device • Multiple games per day • 2–10 players per game</div>
 </header>
 
 <main>
   <!-- LEFT: SHEET -->
   <section class="card">
-    <div class="row">
+    <div class="row topControls">
       <div class="field">
-        <label>Night date</label>
+        <label>Game date</label>
         <input id="nightDate" type="date" />
       </div>
+
+      <div class="field">
+        <label>Players this game</label>
+        <select id="playerCount"></select>
+      </div>
+
       <div class="field">
         <label>Start dealer (Deal 1)</label>
-        <select id="startDealer">
-          <option value="0">Marty</option>
-          <option value="1">Oma</option>
-          <option value="2">Opa</option>
-          <option value="3">Leigh</option>
-        </select>
+        <select id="startDealer"></select>
       </div>
-      <div class="field">
-        <label>Deals on sheet</label>
-        <select id="dealCount">
-          <option value="15">15 (like your sheet)</option>
-          <option value="20">20</option>
-          <option value="25">25</option>
-        </select>
-      </div>
-    </div>
+</div>
 
     <div class="btnbar">
-      <button class="primary" id="newNightBtn">Start New Sheet</button>
-      <button class="good" id="saveNightBtn">Save Sheet</button>
-      <button class="smallbtn" id="exportBtn">Export</button>
-      <button class="smallbtn" id="importBtn">Import</button>
+      <button class="primary" id="newNightBtn">Start New Game</button>
+      <button class="good" id="saveNightBtn">Save Game</button>
+      <button class="bad" id="deleteNightBtn">Delete This Game</button>
+      <button class="export" id="exportBtn">Export</button>
+      <button class="import" id="importBtn">Import</button>
+      <button class="print" id="printBtn">Print / PDF</button>
       <input id="importFile" type="file" accept="application/json" style="display:none" />
-      <button class="bad" id="deleteNightBtn">Delete This Sheet</button>
     </div>
 
     <div class="hint">
-      Tap the <b>Dealer</b> cell to cycle dealer for that deal (if you need to correct it).<br/>
+      Dealer is based on <b>seating order</b> (Seat 1 → Seat 2 → ...).<br/>
+      Tap the <b>Dealer</b> cell to cycle dealer for that deal (corrections).<br/>
       Enter scores. A score of <b>0</b> counts as <span class="win">went out</span>.
     </div>
 
     <div style="margin-top:12px" class="sheetTitle">
-      <h2>Sheet</h2>
-      <span class="pill">Winner rule: <b>lowest total among “went out” nights</b></span>
+      <h2>Game</h2>
+      <span class="pill" id="gamePill">No game loaded</span>
+      <span class="pill">Winner rule: <b>lowest total among “went out”</b></span>
       <span class="pill">0 = <b>went out</b></span>
     </div>
 
     <div class="tableWrap">
       <table id="sheetTable" aria-label="Bush rummy sheet">
-        <thead>
-          <tr>
-            <th>DEAL</th>
-            <th>DEALER</th>
-            <th id="thP0">MARTY</th>
-            <th id="thP1">OMA</th>
-            <th id="thP2">OPA</th>
-            <th id="thP3">LEIGH</th>
-          </tr>
-        </thead>
+        <thead id="sheetHead"></thead>
         <tbody id="sheetBody"></tbody>
-        <tfoot>
-          <tr>
-            <td class="leftFoot" colspan="2">TOTAL</td>
-            <td id="tot0">0</td>
-            <td id="tot1">0</td>
-            <td id="tot2">0</td>
-            <td id="tot3">0</td>
-          </tr>
-        </tfoot>
+        <tfoot id="sheetFoot"></tfoot>
       </table>
     </div>
 
     <div class="hint" id="winnerLine" style="margin-top:10px"></div>
+
+    <div class="chartsSection" id="chartsSection">
+      <div class="sheetTitle" style="margin-top:12px">
+        <h2>Charts (this game)</h2>
+        <span class="pill">Click a chart to enlarge</span>
+        <span class="pill">Points: lower is better</span>
+      </div>
+
+      <div class="chartGrid">
+
+        <div class="chartCard" data-chart="yearTotals" title="Click to enlarge">
+          <div class="chartHead">
+            <div>
+<div class="chartName">Total points over deals</div>
+
+            </div>
+          </div>
+          <canvas id="chartYearTotals" aria-label="Year cumulative points over deals chart"></canvas>
+        </div>
+
+        <div class="chartCard" data-chart="yearWins" title="Click to enlarge">
+          <div class="chartHead">
+            <div>
+              <div class="chartName">Year total wins</div>
+              <div class="chartSub">(higher = better)</div>
+
+            </div>
+          </div>
+          <canvas id="chartYearWins" aria-label="Year total wins chart"></canvas>
+        </div>
+
+        <div class="chartCard" data-chart="totals" title="Click to enlarge">
+          <div class="chartHead">
+            <div class="chartName">Total score over deals</div>
+            <div class="chartSub">Cumulative points after each deal (lower = better)</div>
+          </div>
+          <canvas id="chartTotals" aria-label="Total score chart"></canvas>
+        </div>
+
+        <div class="chartCard" data-chart="perdeal" title="Click to enlarge">
+          <div class="chartHead">
+            <div class="chartName">Deal scores (per deal)</div>
+            <div class="chartSub">Points scored on each deal (not cumulative)</div>
+          </div>
+          <canvas id="chartPerDeal" aria-label="Per deal score chart"></canvas>
+        </div>
+
+        <div class="chartCard" data-chart="ranks" title="Click to enlarge">
+          <div class="chartHead">
+            <div class="chartName">Rank over time (1 = best)</div>
+            <div class="chartSub">Rank after each deal, based on cumulative total</div>
+          </div>
+          <canvas id="chartRanks" aria-label="Rank chart"></canvas>
+        </div>
+
+        <div class="chartCard" data-chart="bars" title="Click to enlarge">
+          <div class="chartHead">
+            <div class="chartName">Most outs (0s) — all saved games</div>
+            <div class="chartSub">Total outs (0s) across all saved games (cumulative)</div>
+          </div>
+          <canvas id="chartBars" aria-label="Most outs chart"></canvas>
+        </div>
+      </div>
+    </div>
+
   </section>
 
-  <!-- RIGHT: YEAR STATS -->
+  <!-- RIGHT: STATS + REGISTRY + SEATING -->
   <aside class="card" id="statsPanel">
     <div class="sheetTitle">
-      <h2>Year Stats</h2>
+      <h2>All-Time Stats</h2>
       <span class="pill"><span id="yearLabel"></span></span>
     </div>
 
     <div class="kpiGrid">
-      <div class="kpi"><div class="t">Sheets (nights) saved</div><div class="v" id="kNights">0</div></div>
+      <div class="kpi"><div class="t">Games saved</div><div class="v" id="kNights">0</div></div>
       <div class="kpi"><div class="t">Deals recorded</div><div class="v" id="kDeals">0</div></div>
       <div class="kpi"><div class="t">Most wins</div><div class="v" id="kMostWins">—</div></div>
       <div class="kpi"><div class="t">Most outs (0s)</div><div class="v" id="kMostOuts">—</div></div>
@@ -418,14 +890,10 @@
       </table>
     </div>
 
-    <!-- EXTRA STATS (below existing Year Stats only) -->
+    <!-- EXTRA STATS -->
     <div class="extraBlock" aria-label="Season highlights">
       <table>
-        <thead>
-          <tr>
-            <th colspan="2">Season Highlights (this year)</th>
-          </tr>
-        </thead>
+        <thead><tr><th colspan="2">Season Highlights (all time)</th></tr></thead>
         <tbody id="highlightsBody">
           <tr><td>Most outs (0s)</td><td class="val" id="hMostOuts">—</td></tr>
           <tr><td>Highest single deal</td><td class="val" id="hHighestDeal">—</td></tr>
@@ -441,53 +909,50 @@
 
     <div class="extraBlock" aria-label="Consistency">
       <table>
-        <thead>
-          <tr>
-            <th colspan="2">Consistency (this year)</th>
-          </tr>
-        </thead>
+        <thead><tr><th colspan="2">Consistency (all time)</th></tr></thead>
         <tbody id="consistencyBody"></tbody>
       </table>
     </div>
 
+    <div style="margin-top:12px" class="sheetTitle">
+      <h2>Seating (this game)</h2>
+      <span class="pill">Seat order = shuffle/dealer rotation</span>
+    </div>
+
+    <div class="hint" id="seatingHint">
+      Set unique seat numbers <b>1..N</b>. Columns render in seat order.
+    </div>
+
+    <div id="seatingGrid"></div>
+
+    <div class="btnbar" style="margin-top:10px">
+<button class="smallbtn applyBig" id="applySeatingBtn">Apply Seating</button>
+    </div>
+
+    <div style="margin-top:14px">
+      <label>Player registry (10 players)</label>
+      <div class="grid2" id="registryGrid"></div>
+      <div class="hint">Names persist long-term. Clearing a player deletes their stats from saved games.</div>
+    </div>
+
     <div style="margin-top:12px">
-      <label>Player names (editable)</label>
-      <div class="nameGrid">
-        <div class="field"><input id="pName0" type="text" placeholder="Player 1" /></div>
-        <div class="field"><input id="pName1" type="text" placeholder="Player 2" /></div>
-        <div class="field"><input id="pName2" type="text" placeholder="Player 3" /></div>
-        <div class="field"><input id="pName3" type="text" placeholder="Player 4" /></div>
+      <label>Load saved game</label>
+      <select id="sessionPicker"></select>
+      <div class="hint">Shows: Date — Game #</div>
+    </div>
+
+    <div style="margin-top:20px; border-top:1px solid var(--line); padding-top:12px">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="hint" style="color:#ff9aa5; text-align:center;">
+          ⚠️ Danger Zone – irreversible action
+        </div>
+        <button class="bad smallbtn" id="deleteAllBtn">Delete ALL Saved Games</button>
       </div>
-      <div class="hint">Names and stats reset each 1 January (yearly season).</div>
     </div>
-
-    <div style="margin-top:12px">
-      <label>Load saved sheet</label>
-      <select id="nightPicker"></select>
-      <div class="hint">Pick a date to load that sheet.</div>
-    </div>
-<!-- DANGER ZONE -->
-<div style="margin-top:20px; border-top:1px solid var(--line); padding-top:12px">
- 
-  <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-  <div class="hint" style="color:#ff9aa5; text-align:center;">
-    ⚠️ Danger Zone – irreversible action
-  </div>
-  <button class="bad smallbtn" id="deleteAllBtn">
-    Delete ALL Saved Sheets
-  </button>
-</div>
-
-</div>
-
-  
-
-</div>
-
   </aside>
 </main>
 
-<!-- KEYPAD OVERLAY (centered on Stats panel) -->
+<!-- KEYPAD OVERLAY -->
 <div id="keypadOverlay" class="keypadOverlay hidden" aria-hidden="true">
   <div id="keypadPanel" class="keypadPanel" role="dialog" aria-label="Score keypad">
     <div class="keypadHead">
@@ -513,75 +978,54 @@
       <button class="kpBtn" data-kp="0">0</button>
       <button class="kpBtn kpEnter" data-kp="ENTER">ENTER</button>
 
-      <button class="kpBtn kpFalse" data-kp="FALSE">False Out (+50)</button>
-      <button class="kpBtn kpCancel span2" data-kp="CANCEL">CANCEL</button>
+      <button class="kpBtn kpCancel span3" data-kp="CANCEL">CANCEL</button>
     </div>
   </div>
 </div>
 
-<!-- (BOTTOM STICKY BAR REMOVED in Micro-step 1) -->
+
+<!-- PLAYER STATS MODAL (Phase 2A) -->
+<div id="playerModalOverlay" class="modalOverlay hidden" aria-hidden="true">
+  <div id="playerModalPanel" class="modalPanel" role="dialog" aria-label="Player statistics">
+    <div class="modalHead">
+      <div>
+        <h3 class="modalTitle" id="playerModalTitle">Player</h3>
+        <div class="modalSub" id="playerModalSub">Year stats</div>
+      </div>
+      <button class="modalCloseBtn" id="playerModalCloseBtn">CLOSE</button>
+    </div>
+
+    <div class="modalGrid" id="playerModalGrid"></div>
+  </div>
+</div>
 
 <script>
 (() => {
-  const KEY = "bush_rummy_sheet_v1";
-  const DEFAULT_PLAYERS = ["Marty","Oma","Opa","Leigh"];
+  const KEY = "bush_rummy_sheet_v1";               // keep to preserve existing saves (migrated)
+  const REGISTRY_KEY = "bush_rummy_player_registry_v1"; // 10 slots, long-term
+  const SCHEMA_VERSION = 3;
+
   const year = new Date().getFullYear();
-  const NAMES_KEY = `bush_rummy_players_${year}`;
+  const LEGACY_PLAYERS_KEY = `bush_rummy_players_v2_${year}`; // old 4-player year-scoped
+  const LEGACY_NAMES_KEY   = `bush_rummy_players_${year}`;    // older 4-player names
+
+  const DEFAULT_REGISTRY_NAMES = Array.from({length:10}, (_,i)=>`Player ${i+1}`);
 
   const el = (id) => document.getElementById(id);
 
-  el("yearLabel").textContent = `Year: ${year}`;
+  // Bush Rummy sheet is fixed: 3..15 cards (13 deals)
+  const FIXED_DEAL_COUNT = 15;
 
-  // nights: [{ id, date, startDealer, dealCount, deals: [ { dealer, scores:[n,n,n,n] } ] }]
-  let nights = [];
-  let currentNightId = null;
+  el("yearLabel").textContent = "All years";
 
-  // Player names (editable, per year)
-  let playerNames = [...DEFAULT_PLAYERS];
+  // registry: [{id,name}] length 10
+  let registry = [];
 
-  function nameOf(i){
-    const n = (playerNames && playerNames[i]) ? String(playerNames[i]).trim() : "";
-    return n || DEFAULT_PLAYERS[i] || `Player ${i+1}`;
-  }
-
-  function loadPlayerNames(){
-    try{
-      const raw = localStorage.getItem(NAMES_KEY);
-      const arr = raw ? JSON.parse(raw) : null;
-      if(Array.isArray(arr) && arr.length === 4){
-        playerNames = arr.map((x,i)=> (String(x||"").trim() || DEFAULT_PLAYERS[i]));
-      } else {
-        playerNames = [...DEFAULT_PLAYERS];
-      }
-    } catch(e){
-      playerNames = [...DEFAULT_PLAYERS];
-    }
-  }
-
-  function savePlayerNames(){
-    localStorage.setItem(NAMES_KEY, JSON.stringify(playerNames));
-  }
-
-  function applyPlayerNamesToUI(){
-    // Update Start Dealer dropdown labels
-    const sel = el("startDealer");
-    if(sel && sel.options && sel.options.length >= 4){
-      for(let i=0;i<4;i++){
-        sel.options[i].textContent = nameOf(i);
-      }
-    }
-    // Update sheet header player labels
-    el("thP0").textContent = nameOf(0).toUpperCase();
-    el("thP1").textContent = nameOf(1).toUpperCase();
-    el("thP2").textContent = nameOf(2).toUpperCase();
-    el("thP3").textContent = nameOf(3).toUpperCase();
-
-    // Populate editable name inputs
-    el("pName0").value = nameOf(0);
-    el("pName1").value = nameOf(1);
-    el("pName2").value = nameOf(2);
-    el("pName3").value = nameOf(3);
-  }
+  // sessions (all years):
+  // { id, date, sessionNumber, playerCount, seating:[playerId|null...], startDealerSeat, dealCount, schemaVersion:3,
+  //   deals:[{ dealerSeat, scores:{[playerId]:n|null} }] }
+  let sessions = [];
+  let currentSessionId = null;
 
   function uid(){
     return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
@@ -594,200 +1038,780 @@
     return `${d.getFullYear()}-${mm}-${dd}`;
   }
 
-  function load(){
+  function normKey(s){
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  }
+
+  function ensureRegistryShape(arr){
+    const out = [];
+    for(let i=0;i<10;i++){
+      const p = arr && arr[i];
+      const id = (p && typeof p.id === "string" && p.id) ? String(p.id) : uid();
+      const name = (p && typeof p.name === "string") ? String(p.name) : "";
+      out.push({ id, name });
+    }
+    return out;
+  }
+
+  function slotName(slotIndex){
+    const p = registry[slotIndex];
+    const nm = p && typeof p.name === "string" ? String(p.name).trim() : "";
+    return nm || DEFAULT_REGISTRY_NAMES[slotIndex] || `Player ${slotIndex+1}`;
+  }
+
+  function cleanDisplayName(name){
+    const raw = String(name || "").trim();
+    const cleaned = raw.replace(/^Player\s+\d+\s*[,\-:]*\s*/i, "").trim();
+    return cleaned || raw;
+  }
+
+  function playerNameById(id){
+    const p = registry.find(x => x && x.id === id);
+    if(!p) return "Deleted player";
+    const idx = registry.indexOf(p);
+    return slotName(idx);
+  }
+
+  function loadRegistry(){
+    // 1) preferred
+    try{
+      const raw = localStorage.getItem(REGISTRY_KEY);
+      if(raw){
+        const arr = JSON.parse(raw);
+        if(Array.isArray(arr)){
+          registry = ensureRegistryShape(arr);
+          saveRegistry();
+          return;
+        }
+      }
+    }catch(e){}
+
+    // 2) migrate from old 4-player (id+name) for all years, else old names
+    let legacy4 = null;
+
+    try{
+      const raw = localStorage.getItem(LEGACY_PLAYERS_KEY);
+      if(raw){
+        const arr = JSON.parse(raw);
+        if(Array.isArray(arr) && arr.length === 4 && arr.every(p => p && typeof p.id === "string" && p.id)){
+          legacy4 = arr.map(p => ({ id:String(p.id), name:String(p.name||"").trim() }));
+        }
+      }
+    }catch(e){}
+
+    if(!legacy4){
+      try{
+        const raw2 = localStorage.getItem(LEGACY_NAMES_KEY);
+        const arr2 = raw2 ? JSON.parse(raw2) : null;
+        if(Array.isArray(arr2) && arr2.length === 4){
+          legacy4 = arr2.map(nm => ({ id:uid(), name:String(nm||"").trim() }));
+        }
+      }catch(e){}
+    }
+
+    registry = [];
+    for(let i=0;i<10;i++){
+      if(i < 4 && legacy4){
+        registry.push({ id: legacy4[i].id, name: legacy4[i].name || "" });
+      }else{
+        registry.push({ id: uid(), name: "" });
+      }
+    }
+    saveRegistry();
+  }
+
+  function saveRegistry(){
+    localStorage.setItem(REGISTRY_KEY, JSON.stringify(registry));
+  }
+
+  function getSessionById(id){
+    return sessions.find(s => s.id === id) || null;
+  }
+
+  function computeDealer(startDealerSeat, dealIndex, playerCount){
+    return (startDealerSeat + dealIndex) % playerCount;
+  }
+
+  function anyScoresInSession(session){
+    if(!session || !Array.isArray(session.deals)) return false;
+    return session.deals.some(d => Object.values(d.scores || {}).some(v => Number.isFinite(v)));
+  }
+
+  function pruneScoresToSeating(session){
+    const allowed = new Set((session.seating || []).filter(Boolean));
+    for(const d of (session.deals || [])){
+      const scores = d.scores || {};
+      for(const k in scores){
+        if(!allowed.has(k)) delete scores[k];
+      }
+    }
+  }
+
+  function ensureSessionShape(session){
+    if(!session || typeof session !== "object") return;
+
+    if(typeof session.id !== "string") session.id = uid();
+    if(typeof session.date !== "string") session.date = todayISO();
+    if(!Number.isFinite(session.sessionNumber)) session.sessionNumber = 1;
+    if(!Number.isFinite(session.playerCount)) session.playerCount = 4;
+    session.playerCount = Math.max(2, Math.min(10, Number(session.playerCount)));
+
+    if(!Array.isArray(session.seating)) session.seating = [];
+    // normalize seating length to playerCount, allow nulls
+    while(session.seating.length < session.playerCount) session.seating.push(null);
+    if(session.seating.length > session.playerCount) session.seating = session.seating.slice(0, session.playerCount);
+
+    if(!Number.isFinite(session.startDealerSeat)) session.startDealerSeat = 0;
+    session.startDealerSeat = ((Number(session.startDealerSeat) % session.playerCount) + session.playerCount) % session.playerCount;
+
+    session.dealCount = FIXED_DEAL_COUNT;
+session.schemaVersion = SCHEMA_VERSION;
+
+    if(!Array.isArray(session.deals)) session.deals = [];
+    for(const d of session.deals){
+      if(!d || typeof d !== "object") continue;
+      if(!Number.isFinite(d.dealerSeat)) d.dealerSeat = 0;
+      d.dealerSeat = ((Number(d.dealerSeat) % session.playerCount) + session.playerCount) % session.playerCount;
+      if(!d.scores || Array.isArray(d.scores) || typeof d.scores !== "object") d.scores = {};
+    }
+
+    pruneScoresToSeating(session);
+  }
+
+  function migrateLegacyToSchema3(item, usedByDate){
+    // legacy schema 2 night: {id,date,startDealer,dealCount,playerIds:[...],deals:[{dealer,scores:{id:n}}]}
+    if(!item || typeof item !== "object") return null;
+
+    // already schema 3
+    if(item.schemaVersion === 3 && Number.isFinite(item.sessionNumber) && Array.isArray(item.seating)){
+      ensureSessionShape(item);
+      return item;
+    }
+
+    // attempt legacy
+    if(typeof item.date !== "string" || !Array.isArray(item.deals)) return null;
+
+    const date = String(item.date);
+    const sn = (usedByDate[date] || 0) + 1;
+    usedByDate[date] = sn;
+
+    const seating = Array.isArray(item.playerIds) ? item.playerIds.map(x => (x ? String(x) : null)) : [];
+    const playerCount = Math.max(2, Math.min(10, seating.length || 4));
+    while(seating.length < playerCount) seating.push(null);
+    if(seating.length > playerCount) seating.length = playerCount;
+
+    const session = {
+      id: (typeof item.id === "string" ? item.id : uid()),
+      date,
+      sessionNumber: sn,
+      playerCount,
+      seating,
+      startDealerSeat: Number.isFinite(item.startDealer) ? Number(item.startDealer) : 0,
+      dealCount: Number.isFinite(item.dealCount) ? Number(item.dealCount) : 15,
+      schemaVersion: 3,
+      deals: []
+    };
+
+    // deals
+    const legacyDeals = item.deals || [];
+    for(const ld of legacyDeals){
+      const dealerSeat = Number.isFinite(ld?.dealer) ? Number(ld.dealer) : 0;
+      let scores = {};
+      if(ld && ld.scores && typeof ld.scores === "object" && !Array.isArray(ld.scores)){
+        scores = {...ld.scores};
+      }
+      session.deals.push({ dealerSeat, scores });
+    }
+
+    ensureSessionShape(session);
+    return session;
+  }
+
+  function loadSessions(){
+    sessions = [];
     try{
       const raw = localStorage.getItem(KEY);
-      nights = raw ? JSON.parse(raw) : [];
-      if(!Array.isArray(nights)) nights = [];
-      // keep only this year (yearly season reset)
-      nights = nights.filter(n => (n?.date || "").startsWith(String(year)));
-    } catch(e){
-      nights = [];
+      const arr = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(arr)) return;
+
+      const usedByDate = {};
+      for(const it of arr){
+        const s = migrateLegacyToSchema3(it, usedByDate);
+        if(!s) continue;
+        // keep ALL years
+        sessions.push(s);
+      }
+    }catch(e){
+      sessions = [];
     }
+
+    // newest first (newest game at top of list)
+    sortSessionsNewestFirst();
+
+    // normalize + persist migrated shape without deleting older years
+    saveSessions();
   }
 
-  function save(){
-    localStorage.setItem(KEY, JSON.stringify(nights));
+  function saveSessions(){
+    localStorage.setItem(KEY, JSON.stringify(sessions));
   }
 
-  function getNightById(id){
-    return nights.find(n => n.id === id) || null;
+  function sortSessionsNewestFirst(){
+    sessions.sort((a,b) => {
+      const d = String(b.date).localeCompare(String(a.date));
+      if(d !== 0) return d;
+      return (Number(b.sessionNumber)||0) - (Number(a.sessionNumber)||0);
+    });
   }
 
-  function computeDealer(startDealer, dealIndex){
-    return (startDealer + dealIndex) % 4;
+  function nextSessionNumberForDate(date){
+    const nums = sessions.filter(s => s.date === date).map(s => Number(s.sessionNumber)||0);
+    const max = nums.length ? Math.max(...nums) : 0;
+    return max + 1;
   }
 
-  function ensureDeals(night){
-    const maxCards = Number(night.dealCount || 15);
+  function defaultSeatingForCount(count){
+    // first N registry ids
+    const ids = registry.map(p => p.id);
+    return ids.slice(0, count);
+  }
+
+  function ensureDeals(session){
+    ensureSessionShape(session);
+
+    const maxCards = Number(session.dealCount || 15);
     const count = Math.max(0, maxCards - 2);
-    if(!Array.isArray(night.deals)) night.deals = [];
-    while(night.deals.length < count){
-      const i = night.deals.length;
-      night.deals.push({
-        dealer: computeDealer(Number(night.startDealer || 0), i),
-        scores: [null,null,null,null]
+
+    while(session.deals.length < count){
+      const i = session.deals.length;
+      session.deals.push({
+        dealerSeat: computeDealer(Number(session.startDealerSeat || 0), i, session.playerCount),
+        scores: {}
       });
     }
-    if(night.deals.length > count){
-      night.deals = night.deals.slice(0, count);
+    if(session.deals.length > count){
+      session.deals = session.deals.slice(0, count);
+    }
+
+    for(let i=0;i<session.deals.length;i++){
+      const d = session.deals[i];
+      if(!Number.isFinite(d.dealerSeat)){
+        d.dealerSeat = computeDealer(Number(session.startDealerSeat || 0), i, session.playerCount);
+      }
+      d.dealerSeat = ((Number(d.dealerSeat) % session.playerCount) + session.playerCount) % session.playerCount;
+      if(!d.scores || Array.isArray(d.scores) || typeof d.scores !== "object") d.scores = {};
+    }
+
+    pruneScoresToSeating(session);
+  }
+
+  function sessionLabel(session){
+    if(!session) return "No game loaded";
+    return `${session.date} — Game ${session.sessionNumber}`;
+  }
+
+  function setGamePill(){
+    const s = getSessionById(currentSessionId);
+    el("gamePill").textContent = s ? sessionLabel(s) : "No game loaded";
+  }
+
+  function seatingNameAtSeat(session, seatIndex){
+    const pid = session?.seating?.[seatIndex] || null;
+    return pid ? playerNameById(pid) : "—";
+  }
+
+  function rebuildPlayerCountSelect(){
+    const sel = el("playerCount");
+    sel.innerHTML = "";
+    for(let n=2;n<=10;n++){
+      const o = document.createElement("option");
+      o.value = String(n);
+      o.textContent = String(n);
+      sel.appendChild(o);
     }
   }
 
-  function startNewNight(){
-    const date = el("nightDate").value || todayISO();
-    const startDealer = Number(el("startDealer").value || 0);
-    const dealCount = Number(el("dealCount").value || 15);
+  function rebuildStartDealerSelect(session){
+    const sel = el("startDealer");
+    sel.innerHTML = "";
+    const pc = session ? session.playerCount : Number(el("playerCount").value || 4);
+    for(let i=0;i<pc;i++){
+      const o = document.createElement("option");
+      o.value = String(i);
+      const name = session ? seatingNameAtSeat(session, i) : `Seat ${i+1}`;
+      o.textContent = `Seat ${i+1} — ${cleanDisplayName(name)}`;
 
-    const existing = nights.find(n => n.date === date);
-    if(existing){
-      if(!confirm(`A sheet for ${date} already exists. Replace it?`)) return;
-      nights = nights.filter(n => n.id !== existing.id);
+      sel.appendChild(o);
+    }
+    sel.value = session ? String(session.startDealerSeat || 0) : "0";
+  }
+
+  function renderRegistry(){
+    const grid = el("registryGrid");
+    grid.innerHTML = "";
+
+    for(let i=0;i<10;i++){
+      const wrap = document.createElement("div");
+      wrap.className = "registrySlot";
+      wrap.innerHTML = `
+        <input id="pName${i}" type="text" placeholder="Player ${i+1}" />
+        <button class="smallbtn" id="clearP${i}">Clear</button>
+      `;
+      grid.appendChild(wrap);
+
+      const inp = wrap.querySelector(`#pName${i}`);
+      inp.value = slotName(i);
+
+      inp.addEventListener("change", onRegistryChange);
+      inp.addEventListener("blur", onRegistryChange);
+
+      wrap.querySelector(`#clearP${i}`).addEventListener("click", () => clearRegistrySlot(i));
+    }
+  }
+
+  function renderSeatingGrid(session){
+    const grid = el("seatingGrid");
+    grid.innerHTML = "";
+
+    const pc = session ? session.playerCount : Number(el("playerCount").value || 4);
+
+    // build current seat assignment map pid -> seatNumber (1..pc)
+    const pidToSeat = {};
+    if(session && Array.isArray(session.seating)){
+      for(let si=0; si<session.seating.length; si++){
+        const pid = session.seating[si];
+        if(pid) pidToSeat[pid] = si + 1;
+      }
     }
 
-    const night = { id: uid(), date, startDealer, dealCount, deals: [] };
-    ensureDeals(night);
-    nights.push(night);
-    nights.sort((a,b) => a.date.localeCompare(b.date));
+    for(let slot=0; slot<10; slot++){
+      const pid = registry[slot].id;
+      const row = document.createElement("div");
+      row.className = "seatingRow";
+      row.innerHTML = `
+        <div>
+          <div class="seatTag">Player</div>
+          <div class="seatingName">${cleanDisplayName(slotName(slot))}</div>
+        </div>
+        <div>
+          <div class="seatTag">Seat #</div>
+          <select class="seatSelect" id="seatPick_${slot}">
+            <option value="">—</option>
+          </select>
+        </div>
+        <div style="text-align:right">
+          <div class="seatTag">ID</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.65);font-family:ui-monospace,Menlo,Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            ${pid.slice(0,8)}
+          </div>
+        </div>
+      `;
+      grid.appendChild(row);
 
-    currentNightId = night.id;
-    save();
-    renderNightPicker();
-    renderSheet();
-    renderYearStats();
-    renderExtraStats();
-  }
+      const sel = row.querySelector(`#seatPick_${slot}`);
+      for(let n=1; n<=pc; n++){
+        const o = document.createElement("option");
+        o.value = String(n);
+        o.textContent = String(n);
+        sel.appendChild(o);
+      }
 
-  function loadNightByDate(date){
-    const night = nights.find(n => n.date === date);
-    if(!night) return;
-    currentNightId = night.id;
-    el("nightDate").value = night.date;
-    el("startDealer").value = String(night.startDealer ?? 0);
-    el("dealCount").value = String(night.dealCount ?? 15);
-    ensureDeals(night);
-    renderSheet();
-    renderYearStats();
-    renderExtraStats();
-  }
+      const current = pidToSeat[pid] || "";
+      sel.value = current ? String(current) : "";
 
-  function deleteCurrentNight(){
-    const night = getNightById(currentNightId);
-    if(!night){ alert("No sheet loaded."); return; }
-    if(!confirm(`Delete sheet for ${night.date}?`)) return;
-    nights = nights.filter(n => n.id !== night.id);
-    currentNightId = null;
-    save();
-    renderNightPicker();
-    renderSheet();
-    renderYearStats();
-    renderExtraStats();
-  }
-
-  function saveCurrentNight(){
-    const night = getNightById(currentNightId);
-    if(!night){ alert("No sheet loaded."); return; }
-
-    const newDate = el("nightDate").value || todayISO();
-    const startDealer = Number(el("startDealer").value || 0);
-    const dealCount = Number(el("dealCount").value || 15);
-
-    const existing = nights.find(n => n.date === newDate && n.id !== night.id);
-    if(existing){
-      if(!confirm(`Another sheet exists for ${newDate}. Replace it?`)) return;
-      nights = nights.filter(n => n.id !== existing.id);
+      sel.addEventListener("change", () => {
+        // live validation highlighting only; apply happens on Apply Seating
+        validateSeatingUI();
+      });
     }
 
-    night.date = newDate;
-    night.startDealer = startDealer;
-    night.dealCount = dealCount;
-    ensureDeals(night);
+    validateSeatingUI();
+  }
 
-    nights.sort((a,b) => a.date.localeCompare(b.date));
-    save();
+  function readSeatingFromUI(session){
+    const pc = session.playerCount;
+    const seatToPid = new Array(pc).fill(null);
 
-    /* MICRO-STEP: after saving, reset the live sheet WITHOUT touching saved nights.
-       Year Stats must remain derived from `nights` only. */
-    currentNightId = null;
-    el("nightDate").value = todayISO();
-    el("startDealer").value = "0";
-    el("dealCount").value = "15";
+    for(let slot=0; slot<10; slot++){
+      const pick = document.getElementById(`seatPick_${slot}`);
+      if(!pick) continue;
+      const seatNum = Number(pick.value || 0);
+      if(!seatNum) continue;
+      if(seatNum >= 1 && seatNum <= pc){
+        seatToPid[seatNum - 1] = registry[slot].id;
+      }
+    }
+    return seatToPid;
+  }
 
-    renderNightPicker();
+  function validateSeatingUI(){
+    const s = getSessionById(currentSessionId);
+    const pc = s ? s.playerCount : Number(el("playerCount").value || 4);
+
+    const seatCounts = {};
+    const usedSeats = new Set();
+
+    for(let slot=0; slot<10; slot++){
+      const pick = document.getElementById(`seatPick_${slot}`);
+      if(!pick) continue;
+
+      pick.classList.remove("seatWarn","seatBad");
+
+      const v = pick.value;
+      if(!v) continue;
+
+      const seatNum = Number(v);
+      if(!Number.isFinite(seatNum) || seatNum < 1 || seatNum > pc){
+        pick.classList.add("seatBad");
+        continue;
+      }
+
+      seatCounts[seatNum] = (seatCounts[seatNum] || 0) + 1;
+      usedSeats.add(seatNum);
+    }
+
+    // duplicates
+    for(let slot=0; slot<10; slot++){
+      const pick = document.getElementById(`seatPick_${slot}`);
+      if(!pick) continue;
+      if(!pick.value) continue;
+
+      const seatNum = Number(pick.value);
+      if(seatCounts[seatNum] > 1){
+        pick.classList.add("seatBad");
+      }
+    }
+
+    // missing seats 1..pc
+    const missing = [];
+    for(let n=1;n<=pc;n++){
+      if(!usedSeats.has(n)) missing.push(n);
+    }
+
+    const hint = el("seatingHint");
+    if(missing.length){
+      hint.innerHTML = `Missing seats: <b>${missing.join(", ")}</b> (set unique 1..${pc})`;
+    }else{
+      hint.innerHTML = `Seating OK. Seat order = shuffle/dealer rotation.`;
+    }
+
+    return missing.length === 0 && Object.values(seatCounts).every(c => c === 1);
+  }
+
+  function applySeating(){
+    const session = getSessionById(currentSessionId);
+    if(!session){ alert("No game loaded. Start a new game first."); return; }
+
+    const ok = validateSeatingUI();
+    if(!ok){
+      alert("Seating not valid.\n\nEach seat 1..N must be assigned exactly once.");
+      return;
+    }
+
+    const newSeating = readSeatingFromUI(session);
+
+    // if scores exist and seating changes, confirm (safe because scores are by playerId; we prune to prevent ghosts)
+    const hadScores = anyScoresInSession(session);
+    const oldSig = JSON.stringify(session.seating || []);
+    const newSig = JSON.stringify(newSeating || []);
+    if(hadScores && oldSig !== newSig){
+      const go = confirm("This game already has scores.\n\nApply new seating anyway?\n(Dealer/columns may change; scores stay with the player.)");
+      if(!go) return;
+    }
+
+    session.seating = newSeating;
+    pruneScoresToSeating(session);
+    // keep start dealer in range
+    session.startDealerSeat = ((Number(session.startDealerSeat||0) % session.playerCount) + session.playerCount) % session.playerCount;
+    // dealer rotation always follows current seating/player count
+    for(let i=0;i<(session.deals||[]).length;i++){
+      session.deals[i].dealerSeat = computeDealer(Number(session.startDealerSeat||0), i, session.playerCount);
+    }
+
+    saveSessions();
+    rebuildStartDealerSelect(session);
     renderSheet();
     renderYearStats();
     renderExtraStats();
+    renderSessionPicker();
   }
 
-  function setScore(dealIndex, playerIndex, value){
-    const night = getNightById(currentNightId);
-    if(!night) return;
-    ensureDeals(night);
+  function autoSeat(){
+    const s = getSessionById(currentSessionId);
+    const pc = s ? s.playerCount : Number(el("playerCount").value || 4);
 
-    const v = (value === "" || value === null || typeof value === "undefined") ? null : Number(value);
-    night.deals[dealIndex].scores[playerIndex] = (Number.isFinite(v) && v >= 0) ? v : null;
-
-    save(); // autosave
-    renderSheet();        // needed for cumulative cell display
-    renderYearStats();
-    renderExtraStats();
+    // assign first pc players to 1..pc
+    for(let slot=0; slot<10; slot++){
+      const pick = document.getElementById(`seatPick_${slot}`);
+      if(!pick) continue;
+      pick.value = "";
+    }
+    for(let seat=1; seat<=pc; seat++){
+      const slot = seat - 1;
+      const pick = document.getElementById(`seatPick_${slot}`);
+      if(pick) pick.value = String(seat);
+    }
+    validateSeatingUI();
   }
 
-  function cycleDealer(dealIndex){
-    const night = getNightById(currentNightId);
-    if(!night) return;
-    ensureDeals(night);
-    night.deals[dealIndex].dealer = (Number(night.deals[dealIndex].dealer || 0) + 1) % 4;
-    save();
-    renderSheet();
-  }
-
-  function totalsForNight(night){
-    const totals = [0,0,0,0];
+  function totalsForSession(session){
+    ensureDeals(session);
+    const totalsById = {};
     let dealsCounted = 0;
 
-    for(const d of night.deals){
-      const s = d.scores || [];
+    for(const d of session.deals){
+      const scores = d.scores || {};
       let hasAny = false;
-      for(let i=0;i<4;i++){
-        const v = s[i];
+      for(const id in scores){
+        const v = scores[id];
         if(Number.isFinite(v)){
-          totals[i] += v;
+          totalsById[id] = (totalsById[id] || 0) + v;
           hasAny = true;
         }
       }
       if(hasAny) dealsCounted++;
     }
-    return {totals, dealsCounted};
+
+    const totalsBySeat = new Array(session.playerCount).fill(0);
+    for(let si=0; si<session.playerCount; si++){
+      const id = session.seating[si];
+      totalsBySeat[si] = id ? (totalsById[id] || 0) : 0;
+    }
+
+    return { totalsById, totalsBySeat, dealsCounted };
   }
 
-  function outsForNight(night){
-    const outs = [0,0,0,0];
-    for(const d of night.deals){
-      for(let i=0;i<4;i++){
-        if(d.scores && d.scores[i] === 0) outs[i] += 1;
+  function outsForSession(session){
+    ensureDeals(session);
+    const outsById = {};
+    for(const d of session.deals){
+      const scores = d.scores || {};
+      for(const id in scores){
+        if(scores[id] === 0) outsById[id] = (outsById[id] || 0) + 1;
       }
     }
-    return outs;
+    const outsBySeat = new Array(session.playerCount).fill(0);
+    for(let si=0; si<session.playerCount; si++){
+      const id = session.seating[si];
+      outsBySeat[si] = id ? (outsById[id] || 0) : 0;
+    }
+    return { outsById, outsBySeat };
   }
 
-  function winnerForNight(night){
-    const {totals} = totalsForNight(night);
-    const outs = outsForNight(night);
-    const candidates = outs.some(o => o > 0) ? outs.map((o,i)=>o>0?i:-1).filter(i=>i>=0) : [0,1,2,3];
+  function winnerForSession(session){
+    const { totalsBySeat } = totalsForSession(session);
+    const { outsBySeat } = outsForSession(session);
 
-    const anyScore = night.deals.some(d => (d.scores||[]).some(v => Number.isFinite(v)));
-    if(!anyScore) return {winners: [], totals, outs};
+    const anyScore = session.deals.some(d => Object.values(d.scores || {}).some(v => Number.isFinite(v)));
+    if(!anyScore) return { winners: [], totalsBySeat, outsBySeat };
+
+    const participants = [];
+    for(let si=0; si<session.playerCount; si++){
+      const id = session.seating[si];
+      if(!id) continue;
+      const played = session.deals.some(d => Number.isFinite(d.scores?.[id]));
+      if(played) participants.push(si);
+    }
+    if(!participants.length) return { winners: [], totalsBySeat, outsBySeat };
+
+    const anyOut = participants.some(si => outsBySeat[si] > 0);
+    const candidates = anyOut ? participants.filter(si => outsBySeat[si] > 0) : participants;
+    if(!candidates.length) return { winners: [], totalsBySeat, outsBySeat };
 
     let min = Infinity;
-    for(const i of candidates) min = Math.min(min, totals[i]);
+    for(const si of candidates) min = Math.min(min, totalsBySeat[si]);
+    const winners = candidates.filter(si => totalsBySeat[si] === min);
 
-    const winners = candidates.filter(i => totals[i] === min);
-    return {winners, totals, outs};
+    return { winners, totalsBySeat, outsBySeat };
+  }
+
+  function startNewGame(){
+    const date = el("nightDate").value || todayISO();
+    const pc = Number(el("playerCount").value || 4);
+    const dealCount = FIXED_DEAL_COUNT;
+const sn = nextSessionNumberForDate(date);
+
+    const session = {
+      id: uid(),
+      date,
+      sessionNumber: sn,
+      playerCount: pc,
+      seating: defaultSeatingForCount(pc),
+      startDealerSeat: 0,
+      dealCount,
+      schemaVersion: SCHEMA_VERSION,
+      deals: []
+    };
+
+    ensureSessionShape(session);
+    ensureDeals(session);
+
+    sessions.push(session);
+    sortSessionsNewestFirst();
+
+    currentSessionId = session.id;
+    saveSessions();
+    el("playerCount").value = String(pc);
+
+    rebuildStartDealerSelect(session);
+    setGamePill();
+    renderSessionPicker();
+    renderSeatingGrid(session);
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function loadGameById(id){
+    const session = getSessionById(id);
+    if(!session) return;
+
+    ensureSessionShape(session);
+    ensureDeals(session);
+
+    currentSessionId = session.id;
+
+    el("nightDate").value = session.date;
+    el("playerCount").value = String(session.playerCount);
+    rebuildStartDealerSelect(session);
+    el("startDealer").value = String(session.startDealerSeat || 0);
+
+    setGamePill();
+    renderSessionPicker();
+    renderSeatingGrid(session);
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function saveCurrentGame(){
+    const session = getSessionById(currentSessionId);
+    if(!session){ alert("No game loaded."); return; }
+
+    const newDate = el("nightDate").value || todayISO();
+    const newDealCount = FIXED_DEAL_COUNT;
+const newPc = Number(el("playerCount").value || session.playerCount);
+
+    // player count change safety
+    const hadScores = anyScoresInSession(session);
+    if(hadScores && newPc < session.playerCount){
+      alert("Cannot reduce player count after scores exist.\n(Start a new game instead.)");
+      el("playerCount").value = String(session.playerCount);
+      return;
+    }
+
+    // date change may conflict with same sessionNumber
+    const targetSn = session.sessionNumber;
+    const conflict = sessions.find(s => s.id !== session.id && s.date === newDate && Number(s.sessionNumber) === Number(targetSn));
+    if(conflict){
+      const auto = confirm(`Game ${targetSn} already exists on ${newDate}.\n\nAuto-assign next game number?`);
+      if(!auto) return;
+      session.sessionNumber = nextSessionNumberForDate(newDate);
+    }
+
+    session.date = newDate;
+    session.dealCount = newDealCount;
+
+    if(newPc !== session.playerCount){
+      session.playerCount = newPc;
+      // expand seating if needed
+      while(session.seating.length < session.playerCount) session.seating.push(null);
+      if(session.seating.length > session.playerCount) session.seating = session.seating.slice(0, session.playerCount);
+      // if empty seating, default it
+      if(session.seating.every(x => !x)){
+        session.seating = defaultSeatingForCount(session.playerCount);
+      }
+    }
+
+    session.startDealerSeat = Number(el("startDealer").value || 0);
+
+    ensureSessionShape(session);
+    ensureDeals(session);
+
+    sortSessionsNewestFirst();
+
+    saveSessions();
+
+    rebuildStartDealerSelect(session);
+    setGamePill();
+    renderSessionPicker();
+    renderSeatingGrid(session);
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function deleteCurrentGame(){
+    const session = getSessionById(currentSessionId);
+    if(!session){ alert("No game loaded."); return; }
+    if(!confirm(`Delete ${sessionLabel(session)}?`)) return;
+
+    sessions = sessions.filter(s => s.id !== session.id);
+    currentSessionId = null;
+    saveSessions();
+
+    setGamePill();
+    renderSessionPicker();
+    renderSeatingGrid(null);
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function renderSessionPicker(){
+    const picker = el("sessionPicker");
+    picker.innerHTML = "";
+
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = sessions.length ? "Select a saved game…" : "No saved games yet";
+    picker.appendChild(opt0);
+
+    for(const s of sessions){
+      const o = document.createElement("option");
+      o.value = s.id;
+      o.textContent = sessionLabel(s);
+      picker.appendChild(o);
+    }
+
+    picker.value = currentSessionId || "";
+    picker.onchange = () => { if(picker.value) loadGameById(picker.value); };
+  }
+
+  function setScore(dealIndex, seatIndex, value){
+    const session = getSessionById(currentSessionId);
+    if(!session) return;
+
+    ensureDeals(session);
+
+    const pid = session.seating?.[seatIndex] || null;
+    if(!pid) return;
+
+    const v = (value === "" || value === null || typeof value === "undefined") ? null : Number(value);
+    session.deals[dealIndex].scores[pid] = (Number.isFinite(v) && v >= 0) ? v : null;
+
+    saveSessions();
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+  function cycleDealer(dealIndex){
+    const session = getSessionById(currentSessionId);
+    if(!session) return;
+
+    ensureDeals(session);
+
+    session.deals[dealIndex].dealerSeat = (Number(session.deals[dealIndex].dealerSeat || 0) + 1) % session.playerCount;
+    saveSessions();
+    renderSheet();
   }
 
   /* =========================
-     KEYPAD (centered on stats panel)
+     KEYPAD
      ========================= */
   const kp = {
     overlay: el("keypadOverlay"),
@@ -795,7 +1819,7 @@
     display: el("keypadDisplay"),
     who: el("keypadWho")
   };
-  let kpState = { open:false, deal:null, player:null, str:"" };
+  let kpState = { open:false, deal:null, seat:null, str:"" };
 
   function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
 
@@ -803,18 +1827,27 @@
     const stats = document.getElementById("statsPanel");
     const rect = stats ? stats.getBoundingClientRect() : null;
 
-    let x = window.innerWidth/2;
-    let y = window.innerHeight/2;
-
-    if(rect){
-      x = rect.left + rect.width/2;
-      y = rect.top + rect.height/2;
-    }
-
-    // keep inside viewport
     const w = kp.panel.offsetWidth || 320;
     const h = kp.panel.offsetHeight || 420;
     const pad = 12;
+    const gap = 12;
+
+    let x = window.innerWidth/2;
+    let y = window.innerHeight/2;
+
+    const twoCol = window.matchMedia && window.matchMedia("(min-width: 980px)").matches;
+
+    if(rect && twoCol){
+      // Place keypad ON the stats card (aligned to its left edge), vertically centered in the viewport
+      const inset = 8;
+      x = rect.left + inset + (w/2);
+      y = window.innerHeight/2;
+    }else if(rect){
+      // Single-column: center in viewport
+      x = window.innerWidth/2;
+      y = window.innerHeight/2;
+    }
+
     x = clamp(x, pad + w/2, window.innerWidth - pad - w/2);
     y = clamp(y, pad + h/2, window.innerHeight - pad - h/2);
 
@@ -826,13 +1859,16 @@
   function kpRender(){
     const s = kpState.str;
     kp.display.textContent = (s && s.length) ? s : "0";
-    kp.who.textContent = (kpState.open ? (nameOf(kpState.player) + " • Deal " + (kpState.deal+3)) : "—");
+    const session = getSessionById(currentSessionId);
+    const seatNum = (kpState.seat ?? 0) + 1;
+    const who = session ? cleanDisplayName(seatingNameAtSeat(session, kpState.seat)) : "\u2014";
+    kp.who.textContent = (kpState.open ? (`Seat ${seatNum} — ${who} • Deal ${kpState.deal + 3}`) : "—");
   }
 
-  function openKeypad(dealIndex, playerIndex, currentRaw){
+  function openKeypad(dealIndex, seatIndex, currentRaw){
     kpState.open = true;
     kpState.deal = dealIndex;
-    kpState.player = playerIndex;
+    kpState.seat = seatIndex;
     kpState.str = (Number.isFinite(currentRaw) ? String(currentRaw) : "");
     kp.overlay.classList.remove("hidden");
     kp.overlay.setAttribute("aria-hidden","false");
@@ -848,13 +1884,12 @@
 
   function commitKeypad(){
     const v = (kpState.str === "") ? "" : Number(kpState.str);
-    const di = kpState.deal, pi = kpState.player;
+    const di = kpState.deal, si = kpState.seat;
     closeKeypad();
-    setScore(di, pi, v);
+    setScore(di, si, v);
   }
 
   kp.overlay.addEventListener("click", (e) => {
-    // click outside panel closes
     if(e.target === kp.overlay) closeKeypad();
   });
 
@@ -872,31 +1907,13 @@
     }
   });
 
-  // keypad button clicks
   kp.panel.querySelectorAll("[data-kp]").forEach(btn => {
     btn.addEventListener("click", () => {
       const v = btn.getAttribute("data-kp");
-      if(v === "DEL"){
-        kpState.str = kpState.str.slice(0,-1);
-        kpRender();
-        return;
-      }
-      if(v === "CANCEL"){
-        closeKeypad();
-        return;
-      }
-      if(v === "ENTER"){
-        commitKeypad();
-        return;
-      }
-      if(v === "FALSE"){
-        // False Out = 50 points
-        kpState.str = "50";
-        kpRender();
-        commitKeypad();
-        return;
-      }
-      // digit
+      if(v === "DEL"){ kpState.str = kpState.str.slice(0,-1); kpRender(); return; }
+      if(v === "CANCEL"){ closeKeypad(); return; }
+      if(v === "ENTER"){ commitKeypad(); return; }
+      if(v === "FALSE"){ kpState.str = "50"; kpRender(); commitKeypad(); return; }
       if(/^[0-9]$/.test(v)){
         if(kpState.str.length < 4){
           kpState.str = (kpState.str === "0") ? v : (kpState.str + v);
@@ -906,43 +1923,197 @@
     });
   });
 
+
+  /* =========================
+     PLAYER STATS MODAL (Phase 2A)
+     ========================= */
+  const pm = {
+    overlay: el("playerModalOverlay"),
+    panel: el("playerModalPanel"),
+    title: el("playerModalTitle"),
+    sub: el("playerModalSub"),
+    grid: el("playerModalGrid"),
+    closeBtn: el("playerModalCloseBtn"),
+    open:false,
+    playerId:null
+  };
+
+  function pmClose(){
+    pm.open = false;
+    pm.playerId = null;
+    pm.overlay.classList.add("hidden");
+    pm.overlay.setAttribute("aria-hidden","true");
+  }
+
+  function pmOpen(playerId){
+    if(!playerId) return;
+    pm.playerId = playerId;
+    pm.open = true;
+
+    const name = playerNameById(playerId);
+    pm.title.textContent = name;
+    pm.sub.textContent = `Year: ${year}`;
+
+    const stats = computePlayerYearStats(playerId);
+    pm.grid.innerHTML = "";
+
+    const add = (t, v) => {
+      const div = document.createElement("div");
+      div.className = "modalKpi";
+      div.innerHTML = `<div class="t">${escapeHtml(t)}</div><div class="v">${escapeHtml(v)}</div>`;
+      pm.grid.appendChild(div);
+    };
+
+    add("Games played", String(stats.gamesPlayed));
+    add("Wins", String(stats.wins));
+    add("Win %", stats.gamesPlayed ? `${((stats.wins / stats.gamesPlayed) * 100).toFixed(1)}%` : "0.0%");
+    add("Outs (0s)", String(stats.outs));
+    add("Total points", String(stats.totalPoints));
+    add("Avg / deal", stats.dealsPlayed ? (stats.totalPoints / stats.dealsPlayed).toFixed(1) : "0.0");
+    add("Best deal", stats.bestDeal === null ? "—" : String(stats.bestDeal));
+    add("Worst deal", stats.worstDeal === null ? "—" : String(stats.worstDeal));
+    add("Longest out streak", String(stats.longestOutStreak));
+    add("Deals played", String(stats.dealsPlayed));
+
+    pm.overlay.classList.remove("hidden");
+    pm.overlay.setAttribute("aria-hidden","false");
+  }
+
+  pm.closeBtn.addEventListener("click", pmClose);
+  pm.overlay.addEventListener("click", (e) => {
+    if(e.target === pm.overlay) pmClose();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(!pm.open) return;
+    if(e.key === "Escape"){ e.preventDefault(); pmClose(); }
+  });
+
+  function computePlayerYearStats(playerId){
+    const out = {
+      playerId,
+      gamesPlayed: 0,
+      wins: 0,
+      outs: 0,
+      totalPoints: 0,
+      dealsPlayed: 0,
+      bestDeal: null,
+      worstDeal: null,
+      longestOutStreak: 0
+    };
+
+    const ordered = [...sessions].sort((a,b) => {
+      const d = String(a.date).localeCompare(String(b.date));
+      if(d !== 0) return d;
+      return (Number(a.sessionNumber)||0) - (Number(b.sessionNumber)||0);
+    });
+
+    let curStreak = 0;
+
+    for(const s of ordered){
+      ensureSessionShape(s);
+      ensureDeals(s);
+
+      let participated = false;
+
+      for(const d of s.deals){
+        const v = d?.scores?.[playerId];
+        if(Number.isFinite(v)){
+          participated = true;
+          out.totalPoints += v;
+          out.dealsPlayed += 1;
+
+          if(out.bestDeal === null || v < out.bestDeal) out.bestDeal = v;
+          if(out.worstDeal === null || v > out.worstDeal) out.worstDeal = v;
+
+          if(v === 0){
+            out.outs += 1;
+            curStreak += 1;
+            if(curStreak > out.longestOutStreak) out.longestOutStreak = curStreak;
+          }else{
+            curStreak = 0;
+          }
+        }
+      }
+
+      if(participated){
+        out.gamesPlayed += 1;
+
+        const w = winnerForSession(s);
+        if(w && Array.isArray(w.winners) && w.winners.length){
+          for(const seatIndex of w.winners){
+            const pid = s.seating?.[seatIndex] || null;
+            if(pid === playerId){
+              out.wins += 1;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    return out;
+  }
+
+
   function renderSheet(){
+    const head = el("sheetHead");
     const body = el("sheetBody");
+    const foot = el("sheetFoot");
+
+    head.innerHTML = "";
     body.innerHTML = "";
+    foot.innerHTML = "";
 
-    const night = getNightById(currentNightId);
+    const session = getSessionById(currentSessionId);
 
-    if(!night){
-      el("winnerLine").textContent = "No sheet loaded. Tap “Start New Sheet”.";
-      ["tot0","tot1","tot2","tot3"].forEach((id)=> el(id).textContent = "0");
+    setGamePill();
+
+    if(!session){
+      el("winnerLine").textContent = "No game loaded. Tap “Start New Game”.";
       return;
     }
 
-    ensureDeals(night);
+    ensureDeals(session);
 
-    // running totals per player as we build rows (for cumulative display)
-    const running = [0,0,0,0];
+    // THEAD
+    const hr = document.createElement("tr");
+    hr.appendChild(th("DEAL"));
+    hr.appendChild(th("DEALER"));
 
-    for(let r=0;r<night.deals.length;r++){
-      const d = night.deals[r];
+    for(let si=0; si<session.playerCount; si++){
+      const name = cleanDisplayName(seatingNameAtSeat(session, si));
+      hr.appendChild(th(`SEAT ${si+1}: ${name}`));
+    }
+    head.appendChild(hr);
+
+    // BODY
+    const running = new Array(session.playerCount).fill(0);
+
+    for(let r=0; r<session.deals.length; r++){
+      const d = session.deals[r];
       const tr = document.createElement("tr");
 
       const tdDeal = document.createElement("td");
       tdDeal.className = "dealCell";
-      tdDeal.textContent = String(r+3);
+      tdDeal.textContent = String(r + 3);
       tr.appendChild(tdDeal);
 
       const tdDealer = document.createElement("td");
       tdDealer.className = "dealerCell";
-      tdDealer.textContent = nameOf(d.dealer ?? computeDealer(Number(night.startDealer||0), r));
+      tdDealer.textContent = cleanDisplayName(seatingNameAtSeat(session, d.dealerSeat | 0));
+
+
+
       tdDealer.addEventListener("click", () => cycleDealer(r));
       tr.appendChild(tdDealer);
 
-      for(let c=0;c<4;c++){
+      for(let si=0; si<session.playerCount; si++){
         const td = document.createElement("td");
+        const pid = session.seating?.[si] || null;
+        const raw = (pid && Number.isFinite(d.scores?.[pid])) ? d.scores[pid] : null;
 
-        const raw = Number.isFinite(d.scores?.[c]) ? d.scores[c] : null;
-        const prior = running[c];
+        const prior = running[si];
         const cumulative = (raw === null) ? null : (prior + raw);
 
         const wrap = document.createElement("div");
@@ -952,8 +2123,8 @@
         inp.type = "text";
         inp.inputMode = "numeric";
         inp.className = "scoreInput";
-        inp.readOnly = true; // keypad drives entry
-        inp.value = (cumulative === null) ? "" : String(cumulative);
+        inp.readOnly = true;
+        inp.value = (raw === null) ? "" : String(raw);
 
         const delta = document.createElement("div");
         delta.className = "scoreDelta";
@@ -965,407 +2136,1811 @@
 
         if(raw === 0) inp.classList.add("zero");
 
-        // Tap/click opens keypad (centered on stats panel). ENTER commits.
-        inp.addEventListener("focus", (e) => { e.preventDefault(); openKeypad(r, c, raw); });
-        inp.addEventListener("click", (e) => { e.preventDefault(); openKeypad(r, c, raw); });
+        inp.addEventListener("focus", (e) => { e.preventDefault(); openKeypad(r, si, raw); });
+        inp.addEventListener("click", (e) => { e.preventDefault(); openKeypad(r, si, raw); });
 
         wrap.appendChild(inp);
         wrap.appendChild(delta);
         td.appendChild(wrap);
         tr.appendChild(td);
 
-        if(raw !== null) running[c] = cumulative;
+        if(raw !== null) running[si] = cumulative;
       }
 
       body.appendChild(tr);
     }
 
-    updateTotalsAndWinner();
+    // TFOOT totals
+    const { totalsBySeat } = totalsForSession(session);
+    const fr = document.createElement("tr");
+
+    const tdL = document.createElement("td");
+    tdL.className = "leftFoot";
+    tdL.colSpan = 2;
+    tdL.textContent = "TOTAL";
+    fr.appendChild(tdL);
+
+    for(let si=0; si<session.playerCount; si++){
+      const td = document.createElement("td");
+      td.textContent = String(totalsBySeat[si] ?? 0);
+      fr.appendChild(td);
+    }
+    foot.appendChild(fr);
+
+    updateWinnerLine();
   }
 
-  function updateTotalsAndWinner(){
-    const night = getNightById(currentNightId);
-    if(!night){
-      el("winnerLine").textContent = "No sheet loaded.";
-      return;
-    }
-    const {winners, totals, outs} = winnerForNight(night);
+  function th(text){
+    const t = document.createElement("th");
+    t.textContent = text;
+    return t;
+  }
 
-    el("tot0").textContent = String(totals[0] ?? 0);
-    el("tot1").textContent = String(totals[1] ?? 0);
-    el("tot2").textContent = String(totals[2] ?? 0);
-    el("tot3").textContent = String(totals[3] ?? 0);
+  function updateWinnerLine(){
+    const session = getSessionById(currentSessionId);
+    if(!session){ el("winnerLine").textContent = "No game loaded."; return; }
 
-    const anyScore = night.deals.some(d => (d.scores||[]).some(v => Number.isFinite(v)));
-    if(!anyScore){
-      el("winnerLine").textContent = "Enter scores to see totals + winner.";
-      return;
-    }
+    const { winners, totalsBySeat, outsBySeat } = winnerForSession(session);
 
-    const outsLine = `Outs (0s): ${nameOf(0)} ${outs[0]}, ${nameOf(1)} ${outs[1]}, ${nameOf(2)} ${outs[2]}, ${nameOf(3)} ${outs[3]}`;
-    if(!winners.length){
-      el("winnerLine").textContent = outsLine;
-      return;
+    const anyScore = session.deals.some(d => Object.values(d.scores || {}).some(v => Number.isFinite(v)));
+    if(!anyScore){ el("winnerLine").textContent = "Enter scores to see totals + winner."; return; }
+
+    const outsParts = [];
+    for(let si=0; si<session.playerCount; si++){
+      outsParts.push(`Seat ${si+1} ${cleanDisplayName(seatingNameAtSeat(session, si))} ${outsBySeat[si]}`);
     }
-    const winNames = winners.map(i => nameOf(i)).join(" & ");
+    const outsLine = `Outs (0s): ${outsParts.join(", ")}`;
+
+    if(!winners.length){ el("winnerLine").textContent = outsLine; return; }
+
+    const winNames = winners.map(si => `Seat ${si+1} ${cleanDisplayName(seatingNameAtSeat(session, si))}`).join(" & ");
     el("winnerLine").innerHTML = `<span class="win"><b>Winner:</b> ${winNames}</span> • ${outsLine}`;
   }
 
-  function renderNightPicker(){
-    const picker = el("nightPicker");
-    picker.innerHTML = "";
-
-    const opt0 = document.createElement("option");
-    opt0.value = "";
-    opt0.textContent = nights.length ? "Select a saved date…" : "No saved sheets yet";
-    picker.appendChild(opt0);
-
-    for(const n of nights){
-      const o = document.createElement("option");
-      o.value = n.date;
-      o.textContent = n.date;
-      picker.appendChild(o);
+  // ===== Stats helpers =====
+  function bestAvgPlayers(totalsById, dealCountsById){
+    const ids = Object.keys(totalsById || {});
+    let best = null;
+    let bestIds = [];
+    for(const id of ids){
+      const deals = Number(dealCountsById?.[id] || 0);
+      if(!deals) continue;
+      const avg = Number(totalsById[id]) / deals;
+      if(best === null || avg < best){
+        best = avg;
+        bestIds = [id];
+      } else if(avg === best){
+        bestIds.push(id);
+      }
     }
-
-    picker.onchange = () => { if(picker.value) loadNightByDate(picker.value); };
-
-    const night = getNightById(currentNightId);
-    picker.value = night ? night.date : "";
+    return bestIds;
   }
 
-  function renderYearStats(){
-    const stats = DEFAULT_PLAYERS.map((_,i) => ({
-      name: nameOf(i), wins:0, outs:0, totalPts:0, deals:0, bestDeal:null, worstDeal:null
-    }));
+  function bestAvg(totalsById, dealCountsById){
+    const ids = Object.keys(totalsById || {});
+    let best = Infinity;
+    let found = false;
+    for(const id of ids){
+      const deals = Number(dealCountsById?.[id] || 0);
+      if(!deals) continue;
+      found = true;
+      const avg = Number(totalsById[id]) / deals;
+      if(avg < best) best = avg;
+    }
+    return found ? best : 0;
+  }
+  // =========================
 
+  
+  function renderYearStats(){
+    const statsById = {};  // {id:{wins,outs,totalPoints,dealsPlayed,bestDeal,worstDeal,gamesPlayed}}
     let totalDeals = 0;
 
-    for(const n of nights){
-      ensureDeals(n);
-      const {dealsCounted} = totalsForNight(n);
+    const ensureStat = (id) => {
+      if(!statsById[id]){
+        statsById[id] = {
+          id,
+          gamesPlayed: 0,
+          wins: 0,
+          outs: 0,
+          totalPoints: 0,
+          dealsPlayed: 0,
+          bestDeal: null,   // min
+          worstDeal: null,  // max
+          allScores: []     // for consistency
+        };
+      }
+      return statsById[id];
+    };
+
+    // pass 1: aggregate scores + outs + per-game participation
+    for(const s of sessions){
+      ensureSessionShape(s);
+      ensureDeals(s);
+
+      // count deals that have any score
+      const { dealsCounted } = totalsForSession(s);
       totalDeals += dealsCounted;
 
-      for(const d of n.deals){
-        const hasAny = (d.scores||[]).some(v => Number.isFinite(v));
-        if(!hasAny) continue;
+      // determine who participated in this game (any score)
+      const participated = new Set();
 
-        for(let i=0;i<4;i++){
-          const v = d.scores?.[i];
+      for(const d of s.deals){
+        const scores = d.scores || {};
+        for(const pid of (s.seating || [])){
+          if(!pid) continue;
+          const v = scores[pid];
           if(Number.isFinite(v)){
-            stats[i].totalPts += v;
-            stats[i].deals += 1;
-            stats[i].bestDeal = (stats[i].bestDeal === null) ? v : Math.min(stats[i].bestDeal, v);
-            stats[i].worstDeal = (stats[i].worstDeal === null) ? v : Math.max(stats[i].worstDeal, v);
-            if(v === 0) stats[i].outs += 1;
+            participated.add(pid);
+
+            const st = ensureStat(pid);
+            st.totalPoints += v;
+            st.dealsPlayed += 1;
+            st.allScores.push(v);
+
+            if(st.bestDeal === null || v < st.bestDeal) st.bestDeal = v;
+            if(st.worstDeal === null || v > st.worstDeal) st.worstDeal = v;
+
+            if(v === 0) st.outs += 1;
           }
         }
       }
 
-      const win = winnerForNight(n);
-      if(win.winners && win.winners.length){
-        for(const wi of win.winners) stats[wi].wins += 1;
+      for(const pid of participated){
+        ensureStat(pid).gamesPlayed += 1;
+      }
+
+      // wins per game (by locked rule function)
+      const w = winnerForSession(s);
+      if(w && Array.isArray(w.winners) && w.winners.length){
+        for(const seatIndex of w.winners){
+          const pid = s.seating?.[seatIndex] || null;
+          if(pid) ensureStat(pid).wins += 1;
+        }
       }
     }
 
-    el("kNights").textContent = String(nights.length);
-    el("kDeals").textContent = String(totalDeals);
-
-    const maxWins = Math.max(0, ...stats.map(s => s.wins));
-    const maxOuts = Math.max(0, ...stats.map(s => s.outs));
-    const mostWinsNames = stats.filter(s => s.wins === maxWins && maxWins>0).map(s => s.name).join(" & ") || "—";
-    const mostOutsNames = stats.filter(s => s.outs === maxOuts && maxOuts>0).map(s => s.name).join(" & ") || "—";
-    el("kMostWins").textContent = (maxWins>0) ? `${mostWinsNames} (${maxWins})` : "—";
-    el("kMostOuts").textContent = (maxOuts>0) ? `${mostOutsNames} (${maxOuts})` : "—";
-
+    // render main stats table
     const tbody = el("statsBody");
     tbody.innerHTML = "";
-    for(const s of stats){
+
+    const ids = Object.keys(statsById);
+
+    // stable order: most wins desc, then lowest avg asc, then name
+    ids.sort((a,b) => {
+      const A = statsById[a], B = statsById[b];
+      if(A.wins !== B.wins) return B.wins - A.wins;
+      const aAvg = A.dealsPlayed ? (A.totalPoints / A.dealsPlayed) : Infinity;
+      const bAvg = B.dealsPlayed ? (B.totalPoints / B.dealsPlayed) : Infinity;
+      if(aAvg !== bAvg) return aAvg - bAvg;
+      return playerNameById(a).localeCompare(playerNameById(b));
+    });
+
+    for(const id of ids){
+      const st = statsById[id];
       const tr = document.createElement("tr");
-      const avg = s.deals ? (s.totalPts / s.deals).toFixed(1) : "—";
+      const avg = st.dealsPlayed ? (st.totalPoints / st.dealsPlayed) : 0;
+
       tr.innerHTML = `
-        <td>${s.name}</td>
-        <td class="${s.wins ? 'win' : 'lose'}">${s.wins}</td>
-        <td>${s.outs}</td>
-        <td>${s.totalPts}</td>
-        <td>${avg}</td>
-        <td>${s.bestDeal === null ? "—" : s.bestDeal}</td>
-        <td>${s.worstDeal === null ? "—" : s.worstDeal}</td>
+        <td><span class="playerLink" data-player-id="${id}">${escapeHtml(cleanDisplayName(playerNameById(id)))}</span></td>
+        <td>${st.wins}</td>
+        <td>${st.outs}</td>
+        <td>${st.totalPoints}</td>
+        <td>${avg ? avg.toFixed(1) : "0.0"}</td>
+        <td>${st.bestDeal === null ? "—" : st.bestDeal}</td>
+        <td>${st.worstDeal === null ? "—" : st.worstDeal}</td>
       `;
+      const link = tr.querySelector(".playerLink");
+      if(link){
+        link.addEventListener("click", () => {
+          const pid = link.getAttribute("data-player-id");
+          pmOpen(pid);
+        });
+      }
       tbody.appendChild(tr);
     }
+
+    // KPIs
+    el("kNights").textContent = String(sessions.length);
+    el("kDeals").textContent = String(totalDeals);
+
+    // most wins + most outs
+    let mostWins = null, mostOuts = null;
+    for(const id of ids){
+      const st = statsById[id];
+      if(mostWins === null || st.wins > statsById[mostWins].wins) mostWins = id;
+      if(mostOuts === null || st.outs > statsById[mostOuts].outs) mostOuts = id;
+    }
+
+    el("kMostWins").textContent = mostWins ? `${playerNameById(mostWins)} (${statsById[mostWins].wins})` : "—";
+    el("kMostOuts").textContent = mostOuts ? `${playerNameById(mostOuts)} (${statsById[mostOuts].outs})` : "—";
   }
 
   function renderExtraStats(){
-    // Recompute year aggregates using same approach as renderYearStats, but store per-player vectors for highlights/consistency.
-    const P = [0,1,2,3];
-    const totals = [0,0,0,0];
-    const outs = [0,0,0,0];
-    const wins = [0,0,0,0];
-
-    let anyDeals = false;
-
-    // streaks for outs (consecutive deals with 0)
-    const bestStreak = [0,0,0,0];
-    const curStreak = [0,0,0,0];
-
-    // best average (lower is better)
-    const dealCounts = [0,0,0,0];
-
-    // highest single deal (max value)
-    let highestDealVal = null;
-    let highestDealWho = [];
-
-    // lowest non-zero deal (min >0)
-    let lowestNonZeroVal = null;
-    let lowestNonZeroWho = [];
-
-    for(const n of nights){
-      ensureDeals(n);
-
-      // night winner(s)
-      const w = winnerForNight(n);
-      if(w.winners && w.winners.length){
-        for(const wi of w.winners) wins[wi] += 1;
+    // highlights + consistency blocks
+    const statsById = {}; // rebuild lightweight for highlights
+    const ensure = (id) => {
+      if(!statsById[id]){
+        statsById[id] = {
+          id,
+          total: 0,
+          deals: 0,
+          outs: 0,
+          highestDeal: null,
+          lowestNonZero: null,
+          scores: []
+        };
       }
+      return statsById[id];
+    };
 
-      for(const d of n.deals){
-        const hasAny = (d.scores||[]).some(v => Number.isFinite(v));
-        if(!hasAny) continue;
-        anyDeals = true;
+    // for streaks (longest out streak across all deals)
+    const outStreak = {};   // current streak per id
+    const outBest = {};     // best streak per id
 
-        for(const i of P){
-          const v = d.scores?.[i];
-          if(Number.isFinite(v)){
-            totals[i] += v;
-            dealCounts[i] += 1;
-            if(v === 0){
-              outs[i] += 1;
-              curStreak[i] += 1;
-              bestStreak[i] = Math.max(bestStreak[i], curStreak[i]);
-            } else {
-              curStreak[i] = 0;
-              if(v > 0){
-                if(lowestNonZeroVal === null || v < lowestNonZeroVal){
-                  lowestNonZeroVal = v;
-                  lowestNonZeroWho = [i];
-                } else if(v === lowestNonZeroVal){
-                  if(!lowestNonZeroWho.includes(i)) lowestNonZeroWho.push(i);
-                }
-              }
-            }
+    const ordered = [...sessions].sort((a,b) => {
+      const d = String(a.date).localeCompare(String(b.date));
+      if(d !== 0) return d;
+      return (Number(a.sessionNumber)||0) - (Number(b.sessionNumber)||0);
+    });
 
-            if(highestDealVal === null || v > highestDealVal){
-              highestDealVal = v;
-              highestDealWho = [i];
-            } else if(v === highestDealVal){
-              if(!highestDealWho.includes(i)) highestDealWho.push(i);
-            }
-          } else {
-            // not entered -> break streak only when moving deal? keep as-is.
-            curStreak[i] = curStreak[i];
+    for(const s of ordered){
+      ensureSessionShape(s);
+      ensureDeals(s);
+
+      for(const d of s.deals){
+        const scores = d.scores || {};
+        for(const pid of (s.seating || [])){
+          if(!pid) continue;
+          const v = scores[pid];
+          if(!Number.isFinite(v)) continue;
+
+          const st = ensure(pid);
+          st.total += v;
+          st.deals += 1;
+          st.scores.push(v);
+
+          if(v === 0) st.outs += 1;
+
+          if(st.highestDeal === null || v > st.highestDeal) st.highestDeal = v;
+          if(v > 0 && (st.lowestNonZero === null || v < st.lowestNonZero)) st.lowestNonZero = v;
+
+          // out streak (consecutive 0 scores in timeline)
+          if(v === 0){
+            outStreak[pid] = (outStreak[pid] || 0) + 1;
+            outBest[pid] = Math.max(outBest[pid] || 0, outStreak[pid]);
+          }else{
+            outStreak[pid] = 0;
           }
         }
       }
     }
 
+    const ids = Object.keys(statsById);
+    const nameVal = (id, val) => id ? `${playerNameById(id)} (${val})` : "—";
+
     // Most outs
-    const maxOuts = Math.max(0, ...outs);
-    el("hMostOuts").textContent = (anyDeals && maxOuts>0) ? `${outs.map((o,i)=>o===maxOuts?nameOf(i):null).filter(Boolean).join(" & ")} (${maxOuts})` : "—";
+    let mostOutsId = null;
+    for(const id of ids){
+      if(mostOutsId === null || statsById[id].outs > statsById[mostOutsId].outs) mostOutsId = id;
+    }
+    el("hMostOuts").textContent = mostOutsId ? nameVal(mostOutsId, statsById[mostOutsId].outs) : "—";
 
     // Highest single deal
-    el("hHighestDeal").textContent = (anyDeals && highestDealVal !== null) ? `${highestDealWho.map(nameOf).join(" & ")} (${highestDealVal})` : "—";
+    let highDealId = null, highDealVal = null;
+    for(const id of ids){
+      const v = statsById[id].highestDeal;
+      if(v === null) continue;
+      if(highDealVal === null || v > highDealVal){
+        highDealVal = v; highDealId = id;
+      }
+    }
+    el("hHighestDeal").textContent = highDealId ? nameVal(highDealId, highDealVal) : "—";
 
-    // Lowest deal (non-zero)
-    el("hLowestNonZero").textContent = (anyDeals && lowestNonZeroVal !== null) ? `${lowestNonZeroWho.map(nameOf).join(" & ")} (${lowestNonZeroVal})` : "—";
+    // Lowest non-zero deal
+    let lowNZId = null, lowNZVal = null;
+    for(const id of ids){
+      const v = statsById[id].lowestNonZero;
+      if(v === null) continue;
+      if(lowNZVal === null || v < lowNZVal){
+        lowNZVal = v; lowNZId = id;
+      }
+    }
+    el("hLowestNonZero").textContent = lowNZId ? nameVal(lowNZId, lowNZVal) : "—";
 
-    // Best average
-    let bestAvg = null, bestAvgWho = [];
-    for(const i of P){
-      if(dealCounts[i] > 0){
-        const avg = totals[i] / dealCounts[i];
-        if(bestAvg === null || avg < bestAvg){
-          bestAvg = avg;
-          bestAvgWho = [i];
-        } else if(avg === bestAvg){
-          bestAvgWho.push(i);
+    // Best avg / deal (lowest)
+    let bestAvgId = null, bestAvgVal = null;
+    for(const id of ids){
+      const st = statsById[id];
+      if(!st.deals) continue;
+      const avg = st.total / st.deals;
+      if(bestAvgVal === null || avg < bestAvgVal){
+        bestAvgVal = avg; bestAvgId = id;
+      }
+    }
+    el("hBestAvg").textContent = bestAvgId ? `${playerNameById(bestAvgId)} (${bestAvgVal.toFixed(1)})` : "—";
+
+    // Most wins (use renderYearStats output if present via DOM, but recompute quickly)
+    // We'll compute wins using winnerForSession
+    const winsById = {};
+    for(const s of ordered){
+      const w = winnerForSession(s);
+      if(w && Array.isArray(w.winners) && w.winners.length){
+        for(const seatIndex of w.winners){
+          const pid = s.seating?.[seatIndex] || null;
+          if(pid) winsById[pid] = (winsById[pid] || 0) + 1;
         }
       }
     }
-    el("hBestAvg").textContent = (anyDeals && bestAvg !== null) ? `${bestAvgWho.map(nameOf).join(" & ")} (${bestAvg.toFixed(1)})` : "—";
-
-    // Most wins
-    const maxWins = Math.max(0, ...wins);
-    el("hMostWins").textContent = (anyDeals && maxWins>0) ? `${wins.map((w,i)=>w===maxWins?nameOf(i):null).filter(Boolean).join(" & ")} (${maxWins})` : "—";
+    let mostWinsId = null;
+    for(const pid in winsById){
+      if(mostWinsId === null || winsById[pid] > winsById[mostWinsId]) mostWinsId = pid;
+    }
+    el("hMostWins").textContent = mostWinsId ? `${playerNameById(mostWinsId)} (${winsById[mostWinsId]})` : "—";
 
     // Longest out streak
-    const maxStreak = Math.max(0, ...bestStreak);
-    el("hBestStreak").textContent = (anyDeals && maxStreak>0) ? `${bestStreak.map((s,i)=>s===maxStreak?nameOf(i):null).filter(Boolean).join(" & ")} (${maxStreak})` : "—";
-
-    // Highest / lowest total points (year)
-    if(anyDeals){
-      const maxTotal = Math.max(...totals);
-      const minTotal = Math.min(...totals);
-      const highNames = totals.map((t,i)=> t===maxTotal ? nameOf(i) : null).filter(Boolean).join(" & ");
-      const lowNames  = totals.map((t,i)=> t===minTotal ? nameOf(i) : null).filter(Boolean).join(" & ");
-      el("hHighTotal").textContent = `${highNames} (${maxTotal})`;
-      el("hLowTotal").textContent  = `${lowNames} (${minTotal})`;
-    } else {
-      el("hHighTotal").textContent = "—";
-      el("hLowTotal").textContent  = "—";
+    let bestStreakId = null;
+    for(const pid in outBest){
+      if(bestStreakId === null || outBest[pid] > outBest[bestStreakId]) bestStreakId = pid;
     }
+    el("hBestStreak").textContent = bestStreakId ? `${playerNameById(bestStreakId)} (${outBest[bestStreakId]})` : "—";
 
-    // Consistency table (simple: avg + outs rate)
-    const cbody = el("consistencyBody");
-    cbody.innerHTML = "";
-    for(const i of P){
-      const avg = dealCounts[i] ? (totals[i] / dealCounts[i]) : null;
-      const outRate = dealCounts[i] ? (outs[i] / dealCounts[i] * 100) : null;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${nameOf(i)}</td>
-        <td class="val">
-          ${dealCounts[i] ? (avg.toFixed(1) + " avg • " + outs[i] + " outs • " + outRate.toFixed(0) + "% out rate") : "—"}
-        </td>
-      `;
-      cbody.appendChild(tr);
+    // High/Low total points for year
+    let highTotalId = null, lowTotalId = null;
+    for(const id of ids){
+      const st = statsById[id];
+      if(!st.deals) continue;
+      if(highTotalId === null || st.total > statsById[highTotalId].total) highTotalId = id;
+      if(lowTotalId === null || st.total < statsById[lowTotalId].total) lowTotalId = id;
     }
-  }
+    el("hHighTotal").textContent = highTotalId ? nameVal(highTotalId, statsById[highTotalId].total) : "—";
+    el("hLowTotal").textContent = lowTotalId ? nameVal(lowTotalId, statsById[lowTotalId].total) : "—";
 
-  function focusNextEmpty(){
-    const night = getNightById(currentNightId);
-    if(!night){ alert("Start a sheet first."); return; }
-    ensureDeals(night);
+    // Consistency block (simple std dev per deal)
+    const cBody = el("consistencyBody");
+    cBody.innerHTML = "";
 
-    for(let r=0;r<night.deals.length;r++){
-      for(let c=0;c<4;c++){
-        const v = night.deals[r].scores?.[c];
-        if(!Number.isFinite(v)){
-          const body = el("sheetBody");
-          const tr = body.children[r];
-          const td = tr.children[2 + c];
-          const inp = td.querySelector("input");
-          if(inp){ inp.focus(); inp.scrollIntoView({block:"center"}); }
-          return;
-        }
+    const stddev = (arr) => {
+      if(!arr || arr.length < 2) return 0;
+      const mean = arr.reduce((a,b)=>a+b,0) / arr.length;
+      const v = arr.reduce((a,b)=>a+(b-mean)*(b-mean),0) / arr.length;
+      return Math.sqrt(v);
+    };
+
+    let mostConsistentId = null, mostSwingyId = null;
+    let mostConsistentVal = null, mostSwingyVal = null;
+
+    for(const id of ids){
+      const st = statsById[id];
+      const sd = stddev(st.scores);
+      if(mostConsistentVal === null || sd < mostConsistentVal){
+        mostConsistentVal = sd; mostConsistentId = id;
+      }
+      if(mostSwingyVal === null || sd > mostSwingyVal){
+        mostSwingyVal = sd; mostSwingyId = id;
       }
     }
-    alert("No empty scores found.");
+
+    const addCRow = (label, val) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${label}</td><td class="val">${val}</td>`;
+      cBody.appendChild(tr);
+    };
+
+    addCRow("Most consistent (std dev)", mostConsistentId ? `${playerNameById(mostConsistentId)} (${mostConsistentVal.toFixed(1)})` : "—");
+    addCRow("Most swingy (std dev)", mostSwingyId ? `${playerNameById(mostSwingyId)} (${mostSwingyVal.toFixed(1)})` : "—");
+    addCRow("Players tracked", ids.length ? String(ids.length) : "0");
   }
 
-  function exportJSON(){
-    const blob = new Blob([JSON.stringify({
-      app:"BushRummySheet",
-      year,
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function onRegistryChange(){
+    for(let i=0;i<10;i++){
+      const inp = document.getElementById(`pName${i}`);
+      if(!inp) continue;
+      const v = String(inp.value || "").trim();
+      registry[i].name = v;
+    }
+    saveRegistry();
+
+    // refresh any visible name-dependent UI
+    const s = getSessionById(currentSessionId);
+    if(s){
+      rebuildStartDealerSelect(s);
+      el("startDealer").value = String(s.startDealerSeat || 0);
+      renderSeatingGrid(s);
+      renderSheet();
+    }
+    renderYearStats();
+    renderExtraStats();
+    renderSessionPicker();
+  }
+
+  function clearRegistrySlot(slotIndex){
+    if(!confirm(`Clear Player ${slotIndex+1}?\n\nThis deletes that player's stats from saved games.`)) return;
+
+    const oldId = registry[slotIndex].id;
+
+    // replace registry slot with new identity
+    registry[slotIndex] = { id: uid(), name: "" };
+    saveRegistry();
+
+    // remove oldId from all sessions (seating + scores)
+    for(const s of sessions){
+      ensureSessionShape(s);
+
+      if(Array.isArray(s.seating)){
+        s.seating = s.seating.map(pid => (pid === oldId ? null : pid));
+      }
+      for(const d of (s.deals || [])){
+        if(d && d.scores && typeof d.scores === "object"){
+          delete d.scores[oldId];
+        }
+      }
+      pruneScoresToSeating(s);
+    }
+    saveSessions();
+
+    renderRegistry();
+
+    const cur = getSessionById(currentSessionId);
+    if(cur){
+      rebuildStartDealerSelect(cur);
+      el("startDealer").value = String(cur.startDealerSeat || 0);
+      renderSeatingGrid(cur);
+    }else{
+      renderSeatingGrid(null);
+    }
+
+    renderSheet();
+    renderSessionPicker();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+    // Triple-confirmation helper (Safety UX)
+  function confirmModal({ message, confirmText, cancelText, confirmClass }){
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "modalOverlay";
+      overlay.setAttribute("aria-hidden","false");
+
+      const panel = document.createElement("div");
+      panel.className = "modalPanel";
+      panel.setAttribute("role","dialog");
+      panel.setAttribute("aria-label","Confirm");
+
+      const body = document.createElement("div");
+      body.style.marginBottom = "12px";
+      body.style.lineHeight = "1.35";
+      body.style.fontSize = "14px";
+      body.innerHTML = escapeHtml(message).replace(/\n/g, "<br/>");
+
+      const btnRow = document.createElement("div");
+      btnRow.className = "btnbar";
+      btnRow.style.marginTop = "0";
+      btnRow.style.justifyContent = "center";
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "smallbtn";
+      cancelBtn.textContent = cancelText || "Cancel";
+
+      const confirmBtn = document.createElement("button");
+      confirmBtn.className = (confirmClass ? (confirmClass + " ") : "") + "smallbtn";
+      confirmBtn.textContent = confirmText || "Confirm";
+
+      const cleanup = () => {
+        document.removeEventListener("keydown", onKeyDown, true);
+        overlay.remove();
+      };
+
+      const done = (val) => { cleanup(); resolve(val); };
+
+      // No keyboard auto-accept: block Enter everywhere while open.
+      const onKeyDown = (e) => {
+        if(e.key === "Enter"){
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        if(e.key === "Escape"){
+          e.preventDefault();
+          e.stopPropagation();
+          done(false);
+        }
+      };
+
+      document.addEventListener("keydown", onKeyDown, true);
+
+      cancelBtn.addEventListener("click", () => done(false));
+      confirmBtn.addEventListener("click", () => done(true));
+
+      // Clicking outside cancels (safe)
+      overlay.addEventListener("click", (e) => {
+        if(e.target === overlay) done(false);
+      });
+
+      btnRow.appendChild(cancelBtn);
+      btnRow.appendChild(confirmBtn);
+
+      panel.appendChild(body);
+      panel.appendChild(btnRow);
+      overlay.appendChild(panel);
+      document.body.appendChild(overlay);
+
+      // Default focus on Cancel (safety)
+      setTimeout(() => cancelBtn.focus(), 0);
+    });
+  }
+  // Triple-Confirmation Delete Flow (Safety UX)
+  async function deleteAllSaved(){
+    // 1) First prompt
+    const step1 = await confirmModal({
+      message: "Do you want to delete ALL saved games (all years)?",
+      cancelText: "Cancel",
+      confirmText: "Continue",
+      confirmClass: "primary"
+    });
+    if(!step1) return;
+
+    // 2) Second prompt
+    const step2 = await confirmModal({
+      message: "Are you absolutely sure you want to delete everything?",
+      cancelText: "Cancel",
+      confirmText: "Yes, delete",
+      confirmClass: "warn"
+    });
+    if(!step2) return;
+
+    // 3) Final prompt
+    const step3 = await confirmModal({
+      message: "⚠️ LAST CHANCE\nThis will permanently delete ALL saved games and cannot be undone.",
+      cancelText: "Cancel",
+      confirmText: "DELETE EVERYTHING",
+      confirmClass: "bad"
+    });
+    if(!step3) return;
+
+    // Only final confirm performs deletion
+    sessions = [];
+    currentSessionId = null;
+    saveSessions();
+
+    setGamePill();
+    renderSessionPicker();
+    renderSeatingGrid(null);
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+  }
+
+
+  function exportData(){
+    const payload = {
+      schemaVersion: SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
-      nights,
-      playerNames
-    }, null, 2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
+      year,
+      registry,
+      sessions
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `bush_rummy_${year}_sheets.json`;
+    a.href = URL.createObjectURL(blob);
+    a.download = `bush_rummy_export_all.json`;
     document.body.appendChild(a);
     a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 0);
   }
 
-  function importJSON(file){
+  function importDataFromFile(file){
     const reader = new FileReader();
     reader.onload = () => {
       try{
-        const data = JSON.parse(reader.result);
-        const incoming = data?.nights;
-        if(!Array.isArray(incoming)) throw new Error("Invalid file");
-        for(const n of incoming){
-          if(!n?.date || !String(n.date).startsWith(String(year))) continue;
-          nights = nights.filter(x => x.date !== n.date);
-          nights.push(n);
+        const data = JSON.parse(String(reader.result || "{}"));
+        if(!data || typeof data !== "object") throw new Error("Invalid file");
+
+// normalize import schema
+let inRegistry = null;
+let inSessions = null;
+
+if (Array.isArray(data.registry) && Array.isArray(data.sessions)) {
+  inRegistry = data.registry;
+  inSessions = data.sessions;
+} else if (data.data && Array.isArray(data.data.registry) && Array.isArray(data.data.sessions)) {
+  inRegistry = data.data.registry;
+  inSessions = data.data.sessions;
+}
+
+if (!inRegistry || !inSessions) {
+  throw new Error("Unsupported import format");
+}
+
+
+        const go = confirm("Import will REPLACE your current registry + ALL saved games.\n\nProceed?");
+        if(!go) return;
+
+        registry = ensureRegistryShape(inRegistry);
+        saveRegistry();
+
+        // keep only current-year sessions
+        sessions = [];
+        const usedByDate = {};
+        for(const it of inSessions){
+          const s = migrateLegacyToSchema3(it, usedByDate);
+          if(!s) continue;
+          sessions.push(s);
         }
-        nights.sort((a,b) => a.date.localeCompare(b.date));
-        save();
-        renderNightPicker();
-        renderSheet();
-        renderYearStats();
-        renderExtraStats();
-        alert("Import complete.");
-      } catch(e){
-        alert("Import failed.");
+        sortSessionsNewestFirst();
+        saveSessions();
+
+        currentSessionId = sessions.length ? sessions[0].id : null;
+
+        renderRegistry();
+        renderSessionPicker();
+        if(currentSessionId) loadGameById(currentSessionId);
+        else{
+          renderSeatingGrid(null);
+          renderSheet();
+          renderYearStats();
+          renderExtraStats();
+        }
+      }catch(err){
+        alert("Import failed.\n\n" + (err?.message || "Unknown error"));
       }
     };
     reader.readAsText(file);
   }
 
-  // Wire
-  el("newNightBtn").addEventListener("click", startNewNight);
-  el("saveNightBtn").addEventListener("click", saveCurrentNight);
-  el("deleteNightBtn").addEventListener("click", deleteCurrentNight);
-// DANGER ZONE — delete ALL saved sheets
-el("deleteAllBtn").addEventListener("click", () => {
-  const first = confirm(
-    "WARNING:\nThis will permanently delete ALL saved Bush Rummy sheets.\n\nDo you want to continue?"
-  );
-  if (!first) return;
+  function onPlayerCountChanged(){
+    const session = getSessionById(currentSessionId);
+    if(!session){
+      // no game loaded: just rerender seating preview
+      renderSeatingGrid(null);
+      return;
+    }
 
-  const second = confirm(
-    "FINAL CONFIRMATION:\nThis action CANNOT be undone.\n\nDelete everything?"
-  );
-  if (!second) return;
+    const newPc = Number(el("playerCount").value || session.playerCount);
+    if(newPc === session.playerCount) return;
 
-  localStorage.removeItem(KEY);
-  alert("All saved Bush Rummy sheets have been deleted.");
-  location.reload();
-});
+    const hadScores = anyScoresInSession(session);
+    if(hadScores && newPc < session.playerCount){
+      alert("Cannot reduce players after scores exist.\n(Start a new game instead.)");
+      el("playerCount").value = String(session.playerCount);
+      return;
+    }
 
+    session.playerCount = Math.max(2, Math.min(10, newPc));
+    while(session.seating.length < session.playerCount) session.seating.push(null);
+    if(session.seating.length > session.playerCount) session.seating = session.seating.slice(0, session.playerCount);
 
-  el("exportBtn").addEventListener("click", exportJSON);
-  el("importBtn").addEventListener("click", () => el("importFile").click());
-  el("importFile").addEventListener("change", (e) => {
-    const f = e.target.files && e.target.files[0];
-    if(f) importJSON(f);
-    e.target.value = "";
-  });
+    // if all empty, default
+    if(session.seating.every(x => !x)){
+      session.seating = defaultSeatingForCount(session.playerCount);
+    }
 
-  // Player name editing (per-year)
-  function onNameChange(){
-    playerNames = [el("pName0").value, el("pName1").value, el("pName2").value, el("pName3").value]
-      .map((x,i)=> (String(x||"").trim() || DEFAULT_PLAYERS[i]));
-    savePlayerNames();
-    applyPlayerNamesToUI();
+    ensureSessionShape(session);
+    ensureDeals(session);
+
+    // keep dealer
+    session.startDealerSeat = Math.min(session.startDealerSeat || 0, session.playerCount-1);
+    for(let i=0;i<session.deals.length;i++){
+      // dealer rotation always follows current seating/player count
+      session.deals[i].dealerSeat = computeDealer(Number(session.startDealerSeat||0), i, session.playerCount);
+    }
+
+    saveSessions();
+
+    rebuildStartDealerSelect(session);
+    el("startDealer").value = String(session.startDealerSeat || 0);
+    renderSeatingGrid(session);
+    renderSheet();
+    renderYearStats();
+    renderExtraStats();
+    renderSessionPicker();
+  }
+
+  function onDealCountChanged(){
+    const session = getSessionById(currentSessionId);
+    if(!session) return;
+    session.dealCount = FIXED_DEAL_COUNT;
+ensureDeals(session);
+    saveSessions();
     renderSheet();
     renderYearStats();
     renderExtraStats();
   }
-  ["pName0","pName1","pName2","pName3"].forEach((id)=> {
-    el(id).addEventListener("change", onNameChange);
-    el(id).addEventListener("blur", onNameChange);
-  });
 
-  // Init
-  loadPlayerNames();
-  load();
-  el("nightDate").value = todayISO();
-  el("startDealer").value = "0";
-  el("dealCount").value = "15";
+  function onStartDealerChanged(){
+    const session = getSessionById(currentSessionId);
+    if(!session) return;
 
-  // Auto-load latest sheet if exists
-  if(nights.length){
-    const last = nights[nights.length - 1];
-    currentNightId = last.id;
-    el("nightDate").value = last.date;
-    el("startDealer").value = String(last.startDealer ?? 0);
-    el("dealCount").value = String(last.dealCount ?? 15);
+    session.startDealerSeat = Number(el("startDealer").value || 0);
+    // reset dealer rotation to match start dealer
+    for(let i=0;i<(session.deals||[]).length;i++){
+      session.deals[i].dealerSeat = computeDealer(Number(session.startDealerSeat||0), i, session.playerCount);
+    }
+    saveSessions();
+    renderSheet();
   }
 
-  applyPlayerNamesToUI();
-  renderNightPicker();
-  renderSheet();
-  renderYearStats();
-  renderExtraStats();
+  // ============ INIT ============
 
-  // Reposition keypad on resize/orientation changes (if open)
-  window.addEventListener("resize", () => { if(kpState.open) positionKeypadToStats(); });
+  /* ==================== CHARTS (THIS GAME) ==================== */
+  function clampInt(v, min, max){
+    const n = parseInt(v, 10);
+    if(!isFinite(n)) return min;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  const CHART_COLORS = [
+    "#2aa9ff", "#2ecc71", "#f1c40f", "#ff5a6b", "#9b59b6",
+    "#1abc9c", "#e67e22", "#95a5a6", "#00c2d1", "#ff6ec7"
+  ];
+  let chartZoomKey = null;
+let chartZoomOpen = false;
+  let barDealNo = 11;
+  let chartsBooted = false;
+
+  function ensureChartZoomWired(){
+    const overlay = document.getElementById("chartZoomOverlay");
+    const closeBtn = document.getElementById("chartZoomClose");
+    if(!overlay || !closeBtn) return false;
+
+    if(overlay.dataset && overlay.dataset.wired === "1") return true;
+    if(overlay.dataset) overlay.dataset.wired = "1";
+
+    closeBtn.addEventListener("click", closeChartZoom);
+    overlay.addEventListener("click", (ev) => {
+      if(ev.target === overlay) closeChartZoom();
+    });
+
+    document.addEventListener("keydown", (ev) => {
+      if(ev.key !== "Escape") return;
+
+      // Avoid interfering with other modals
+      try{
+        if(typeof kpState !== "undefined" && kpState && kpState.open) return;
+        if(typeof pm !== "undefined" && pm && pm.open) return;
+      }catch(e){}
+
+      const ov = document.getElementById("chartZoomOverlay");
+      if(ov && !ov.classList.contains("hidden")){
+        ev.preventDefault();
+        closeChartZoom();
+      }
+    });
+
+    return true;
+  }
+
+  function bootChartsUI(){
+    const sel = document.getElementById("barDealSelect");
+    if(sel){
+      // legacy per-deal selector (may be hidden/removed in newer layouts)
+      sel.innerHTML = "";
+      for(let d=3; d<=15; d++){
+        const opt = document.createElement("option");
+        opt.value = String(d);
+        opt.textContent = String(d);
+        sel.appendChild(opt);
+      }
+      // default deal
+      barDealNo = 11;
+      sel.value = String(barDealNo);
+      sel.addEventListener("change", () => {
+        barDealNo = parseInt(sel.value, 10) || 11;
+        renderCharts();
+      });
+    }
+
+    // click-to-zoom
+    document.querySelectorAll(".chartCard").forEach(card => {
+      card.addEventListener("click", (ev) => {
+        const key = card.getAttribute("data-chart");
+        if(!key) return;
+        openChartZoom(key);
+      });
+    });
+
+    // chart zoom close wiring (overlay is defined after <script>, so wire lazily)
+    ensureChartZoomWired();
+    if(!ensureChartZoomWired()){
+      setTimeout(ensureChartZoomWired, 0);
+      setTimeout(ensureChartZoomWired, 50);
+    }
+
+    chartsBooted = true;
+  }
+
+  function scheduleChartZoomRender(attempt=0){
+    // Render after layout so the zoom canvas has real dimensions.
+    requestAnimationFrame(() => {
+      const overlay = document.getElementById("chartZoomOverlay");
+      const canvas = document.getElementById("chartZoomCanvas");
+      if(overlay && !overlay.classList.contains("hidden") && canvas){
+        const r = canvas.getBoundingClientRect();
+        if((r.width < 50 || r.height < 50) && attempt < 10){
+          return scheduleChartZoomRender(attempt + 1);
+        }
+      }
+      renderCharts();
+    });
+  }
+
+  function openChartZoom(key){
+    ensureChartZoomWired();
+    const overlay = document.getElementById("chartZoomOverlay");
+    if(!overlay) return;
+    chartZoomKey = key;
+    chartZoomOpen = true;
+    overlay.classList.remove("hidden");
+    overlay.setAttribute("aria-hidden","false");
+    scheduleChartZoomRender(0);
+  }
+
+  function closeChartZoom(){
+    const overlay = document.getElementById("chartZoomOverlay");
+    if(!overlay) return;
+    overlay.classList.add("hidden");
+    overlay.setAttribute("aria-hidden","true");
+    chartZoomKey = null;
+    chartZoomOpen = false;
+  }
+
+  function getActiveSession(){
+    if(!currentSessionId) return null;
+    return getSessionById(currentSessionId);
+  }
+
+  function getSeatPlayerIds(session){
+    if(!session) return [];
+    const n = clampInt(session.playerCount || 0, 0, 10);
+    const seating = Array.isArray(session.seating) ? session.seating : [];
+    return seating.slice(0, n).filter(Boolean);
+  }
+
+  function getDeals(session){
+    if(!session || !Array.isArray(session.deals)) return [];
+    const arr = session.deals.slice();
+    // Legacy/new formats: most sessions do NOT store dealNo (deals are implied 3..15).
+    // Only sort when dealNo actually exists.
+    const hasDealNo = arr.some(d => Number.isFinite(d?.dealNo));
+    if(hasDealNo){
+      arr.sort((a,b) => (a.dealNo||0) - (b.dealNo||0));
+    }
+    return arr;
+  }
+
+  function buildSeries(session){
+    const deals = getDeals(session);
+
+    // X axis labels:
+    // - New schema (v3): deals are implicit and correspond to deal numbers 3..15.
+    // - Legacy imports may contain dealNo.
+    const x = deals.map((d, i) => (Number.isFinite(d?.dealNo) ? d.dealNo : (i + 3)));
+
+    // Players in seat order (so colors match seating):
+    const players = [];
+    const n = clampInt(session?.playerCount || 0, 0, 10);
+    const seating = Array.isArray(session?.seating) ? session.seating : [];
+    for(let si=0; si<n; si++){
+      const pid = seating[si] || null;
+      if(pid){
+        players.push({
+          id: pid,
+          seat: si + 1,
+          name: playerNameById(pid),
+          color: CHART_COLORS[players.length % CHART_COLORS.length]
+        });
+      }
+    }
+
+    const perDeal = {};
+    const totals = {};
+    const ranks = {};
+
+    players.forEach(p => {
+      perDeal[p.id] = deals.map(d => {
+        const v = (d && d.scores) ? d.scores[p.id] : null;
+        return (typeof v === "number" && isFinite(v)) ? v : 0;
+      });
+      let run = 0;
+      totals[p.id] = perDeal[p.id].map(v => (run += (v||0)));
+    });
+
+    // ranks over time (1 = best / lowest total)
+    x.forEach((_, i) => {
+      const snapshot = players.map(p => ({ id:p.id, total: totals[p.id][i] }));
+      snapshot.sort((a,b) => a.total - b.total);
+      let rank = 1;
+      snapshot.forEach((s, idx) => {
+        if(idx>0 && s.total !== snapshot[idx-1].total) rank = idx+1;
+        (ranks[s.id] ||= [])[i] = rank;
+      });
+    });
+
+    return { x, players, perDeal, totals, ranks };
+  }
+
+  function _colorForPlayer(id){
+    const idx = registry.findIndex(p => p && p.id === id);
+    if(idx >= 0) return CHART_COLORS[idx % CHART_COLORS.length];
+    // fallback stable hash
+    const s = String(id || "");
+    let h = 0;
+    for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
+    return CHART_COLORS[h % CHART_COLORS.length];
+  }
+
+  function _yearFromDateString(dateStr){
+    const y = parseInt(String(dateStr || "").slice(0,4), 10);
+    return (y >= 2000 && y <= 2100) ? y : (new Date().getFullYear());
+  }
+
+  function getYearForYearCharts(){
+    const s = getActiveSession();
+    const ds = (s && s.date) ? s.date : (el("nightDate") ? el("nightDate").value : "");
+    return _yearFromDateString(ds);
+  }
+
+  function _labelForYearSession(s, i){
+    const ds = String(s?.date || "");
+    const mmdd = (ds.length >= 10) ? (ds.slice(5,7) + "/" + ds.slice(8,10)) : "";
+    const sn = Number.isFinite(s?.sessionNumber) ? `G${s.sessionNumber}` : `G${i+1}`;
+    return (mmdd ? `${mmdd} ${sn}` : sn).trim();
+  }
+
+  function buildYearSeries(year, metric){
+    const y = Number(year) || new Date().getFullYear();
+    const yearSessions = sessions
+      .filter(s => String(s?.date || "").startsWith(String(y)))
+      .sort((a,b) => {
+        const d = String(a?.date || "").localeCompare(String(b?.date || ""));
+        if(d !== 0) return d;
+        const sa = Number(a?.sessionNumber || 0);
+        const sb = Number(b?.sessionNumber || 0);
+        if(sa !== sb) return sa - sb;
+        return String(a?.id || "").localeCompare(String(b?.id || ""));
+      });
+
+    const idsSet = new Set();
+    yearSessions.forEach(s => {
+      const seating = Array.isArray(s?.seating) ? s.seating : [];
+      seating.forEach(id => { if(id) idsSet.add(id); });
+    });
+
+    const ids = Array.from(idsSet).sort((a,b) => {
+      const ia = registry.findIndex(p => p && p.id === a);
+      const ib = registry.findIndex(p => p && p.id === b);
+      if(ia !== -1 || ib !== -1){
+        if(ia === -1) return 1;
+        if(ib === -1) return -1;
+        return ia - ib;
+      }
+      return String(a).localeCompare(String(b));
+    });
+
+    const players = ids.map(id => ({
+      id,
+      name: playerNameById(id),
+      color: _colorForPlayer(id)
+    }));
+
+    const x = yearSessions.map((s,i) => _labelForYearSession(s,i));
+
+    const totals = {};
+    const running = {};
+    players.forEach(p => { totals[p.id] = []; running[p.id] = 0; });
+
+    yearSessions.forEach(s => {
+      if(metric === "wins"){
+        const win = winnerForSession(s);
+        const winners = (win && Array.isArray(win.winners)) ? win.winners : [];
+        winners.forEach(si => {
+          const pid = s?.seating?.[si] || null;
+          if(pid && (pid in running)) running[pid] += 1;
+        });
+      }else{
+        const deals = getDeals(s);
+        deals.forEach(d => {
+          const scores = d && d.scores ? d.scores : {};
+          for(const pid in scores){
+            const v = scores[pid];
+            if(typeof v === "number" && isFinite(v) && (pid in running)){
+              running[pid] += v;
+            }
+          }
+        });
+      }
+
+      players.forEach(p => totals[p.id].push(running[p.id]));
+    });
+
+    return { x, players, totals, perDeal:{}, ranks:{} };
+  }
+
+  function buildYearWinsBarSeries(year){
+    const y = Number(year) || new Date().getFullYear();
+    const yearSessions = sessions
+      .filter(s => String(s?.date || "").startsWith(String(y)));
+
+    const idsSet = new Set();
+    yearSessions.forEach(s => {
+      const seating = Array.isArray(s?.seating) ? s.seating : [];
+      seating.forEach(id => { if(id) idsSet.add(id); });
+    });
+
+    const ids = Array.from(idsSet).sort((a,b) => {
+      const ia = registry.findIndex(p => p && p.id === a);
+      const ib = registry.findIndex(p => p && p.id === b);
+      if(ia !== -1 || ib !== -1){
+        if(ia === -1) return 1;
+        if(ib === -1) return -1;
+        return ia - ib;
+      }
+      return String(a).localeCompare(String(b));
+    });
+
+    const players = ids.map(id => ({
+      id,
+      name: playerNameById(id),
+      color: _colorForPlayer(id)
+    }));
+
+    const wins = {};
+    players.forEach(p => { wins[p.id] = 0; });
+
+    yearSessions.forEach(s => {
+      const win = winnerForSession(s);
+      const winners = (win && Array.isArray(win.winners)) ? win.winners : [];
+      winners.forEach(si => {
+        const pid = s?.seating?.[si] || null;
+        if(pid && (pid in wins)) wins[pid] += 1;
+      });
+    });
+
+    const x = ["Wins"];
+    const perDeal = {};
+    players.forEach(p => { perDeal[p.id] = [wins[p.id] || 0]; });
+
+    return { x, players, perDeal, totals:{}, ranks:{}, titleHint:`Year wins (${y})` };
+  }
+
+  function buildAllGamesOutsBarSeries(){
+    const idsSet = new Set();
+    sessions.forEach(s => {
+      const seating = Array.isArray(s?.seating) ? s.seating : [];
+      seating.forEach(id => { if(id) idsSet.add(id); });
+    });
+
+    const ids = Array.from(idsSet).sort((a,b) => {
+      const ia = registry.findIndex(p => p && p.id === a);
+      const ib = registry.findIndex(p => p && p.id === b);
+      if(ia !== -1 || ib !== -1){
+        if(ia === -1) return 1;
+        if(ib === -1) return -1;
+        return ia - ib;
+      }
+      return String(a).localeCompare(String(b));
+    });
+
+    const players = ids.map(id => ({
+      id,
+      name: playerNameById(id),
+      color: _colorForPlayer(id)
+    }));
+
+    const outs = {};
+    players.forEach(p => { outs[p.id] = 0; });
+
+    for(const s of sessions){
+      ensureSessionShape(s);
+      ensureDeals(s);
+
+      for(const d of (s.deals || [])){
+        const scores = d.scores || {};
+        for(const pid of (s.seating || [])){
+          if(!pid) continue;
+          const v = scores[pid];
+          if(v === 0 || v === "0"){
+            outs[pid] = (outs[pid] || 0) + 1;
+          }
+        }
+      }
+    }
+
+    const x = ["Outs"];
+    const perDeal = {};
+    players.forEach(p => { perDeal[p.id] = [outs[p.id] || 0]; });
+
+    return { x, players, perDeal, totals:{}, ranks:{}, titleHint:"Most outs (all saved games)" };
+  }
+
+  function buildYearTotalsOverDealsSeries(year){
+    const y = Number(year) || new Date().getFullYear();
+    const yearSessions = sessions
+      .filter(s => String(s?.date || "").startsWith(String(y)));
+
+    const idsSet = new Set();
+    yearSessions.forEach(s => {
+      const seating = Array.isArray(s?.seating) ? s.seating : [];
+      seating.forEach(id => { if(id) idsSet.add(id); });
+    });
+
+    const ids = Array.from(idsSet).sort((a,b) => {
+      const ia = registry.findIndex(p => p && p.id === a);
+      const ib = registry.findIndex(p => p && p.id === b);
+      if(ia !== -1 || ib !== -1){
+        if(ia === -1) return 1;
+        if(ib === -1) return -1;
+        return ia - ib;
+      }
+      return String(a).localeCompare(String(b));
+    });
+
+    const players = ids.map(id => ({
+      id,
+      name: playerNameById(id),
+      color: _colorForPlayer(id)
+    }));
+
+    const x = [];
+    for(let dn=3; dn<=15; dn++) x.push(dn);
+
+    const sums = {};
+    players.forEach(p => { sums[p.id] = {}; x.forEach(dn => { sums[p.id][dn] = 0; }); });
+
+    yearSessions.forEach(s => {
+      const deals = getDeals(s);
+      deals.forEach((d, idx) => {
+        const dn = Number.isFinite(d?.dealNo) ? d.dealNo : (3 + idx);
+        if(dn < 3 || dn > 15) return;
+        const scores = d && d.scores ? d.scores : {};
+        for(const pid in scores){
+          const v = scores[pid];
+          if(typeof v === "number" && isFinite(v) && (pid in sums)){
+            sums[pid][dn] += v;
+          }
+        }
+      });
+    });
+
+    const totals = {};
+    players.forEach(p => {
+      let run = 0;
+      totals[p.id] = [];
+      x.forEach(dn => {
+        run += (sums[p.id][dn] || 0);
+        totals[p.id].push(run);
+      });
+    });
+
+const axisLabels = Array(x.length).fill("");
+axisLabels[0]  = "2";
+axisLabels[3]  = "4";
+axisLabels[6]  = "6";
+axisLabels[9]  = "8";
+axisLabels[12] = "10";
+
+return { x, axisLabels, showYLabels:false, players, totals, perDeal:{}, ranks:{} };
+
+  }
+
+
+
+  function fitCanvas(canvas){
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(10, Math.floor(rect.width));
+    const h = Math.max(10, Math.floor(rect.height));
+    const needW = Math.floor(w * dpr);
+    const needH = Math.floor(h * dpr);
+    if(canvas.width !== needW || canvas.height !== needH){
+      canvas.width = needW;
+      canvas.height = needH;
+    }
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx, w, h };
+  }
+
+  function clearChart(canvas, msg){
+    if(!canvas) return;
+    const { ctx, w, h } = fitCanvas(canvas);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = "rgba(0,0,0,.12)";
+    ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.strokeRect(0.5,0.5,w-1,h-1);
+    ctx.fillStyle = "rgba(255,255,255,.7)";
+    ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(msg || "No game loaded", w/2, h/2);
+  }
+
+  function drawAxes(ctx, box, xLabels, yMin, yMax, yInvert, showYLabels=true){
+
+    const { x, y, w, h } = box;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
+    ctx.fillStyle = "rgba(255,255,255,.65)";
+    ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.lineWidth = 1;
+
+    // border
+    ctx.strokeRect(x+0.5, y+0.5, w-1, h-1);
+
+    // horizontal grid (5 lines)
+    const grid = 5;
+    for(let i=0;i<=grid;i++){
+      const yy = y + (h * i / grid);
+      ctx.strokeStyle = "rgba(255,255,255,.08)";
+      ctx.beginPath();
+      ctx.moveTo(x, yy);
+      ctx.lineTo(x+w, yy);
+      ctx.stroke();
+    }
+
+    // x labels
+    ctx.fillStyle = "rgba(255,255,255,.60)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    const n = xLabels.length;
+    if(n){
+      const step = Math.max(1, Math.ceil(n / 6)); // avoid clutter
+      for(let i=0;i<n;i+=step){
+        const px = x + (w * i / Math.max(1,n-1));
+        ctx.fillText(String(xLabels[i]), px, y+h+6);
+      }
+    }
+
+// y labels (min/max) — only when xLabels are present
+if (showYLabels && Array.isArray(xLabels) && xLabels.length) {
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  const topVal = yInvert ? yMin : yMax;
+  const botVal = yInvert ? yMax : yMin;
+  ctx.fillText(String(topVal), x+6, y+12);
+  ctx.fillText(String(botVal), x+6, y+h-12);
+}
+
+
+    ctx.restore();
+  }
+
+  function makeYMapper(yMin, yMax, yTop, yBottom, invert){
+    const span = (yMax - yMin) || 1;
+    return function(v){
+      const t = (v - yMin) / span;
+      const u = invert ? (1 - t) : t;
+      return yTop + (yBottom - yTop) * u;
+    };
+  }
+
+  
+  function _roundRectPath(ctx, x, y, w, h, r){
+    const rr = Math.max(0, Math.min(r, w/2, h/2));
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+  }
+
+  function _playerLabel(p){
+    const nm = cleanDisplayName(p?.name || "");
+    const seat = Number.isFinite(p?.seat) ? `S${p.seat} ` : "";
+    return (seat + (nm || "Player")).trim();
+  }
+
+  function drawLegend(ctx, plot, players){
+    if(!players || players.length <= 1) return;
+
+    ctx.save();
+    ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+
+    const itemH = 16;
+    const padX = 8, padY = 6;
+    const lineW = 18;
+
+    // Layout into columns
+    const maxH = Math.max(48, plot.h - 12);
+    const itemsPerCol = Math.max(1, Math.floor(maxH / itemH));
+    const cols = Math.min(3, Math.ceil(players.length / itemsPerCol));
+
+    // Compute column widths
+    const colW = [];
+    for(let c=0; c<cols; c++){
+      let w = 0;
+      for(let i=c*itemsPerCol; i<Math.min(players.length, (c+1)*itemsPerCol); i++){
+        const label = _playerLabel(players[i]);
+        w = Math.max(w, ctx.measureText(label).width);
+      }
+      colW[c] = Math.ceil(lineW + 8 + w);
+    }
+
+    const totalW = Math.min(plot.w - 12, colW.reduce((a,b)=>a+b,0) + padX*2);
+    const rows = Math.min(itemsPerCol, players.length);
+    const totalH = Math.min(plot.h - 12, (rows * itemH) + padY*2);
+
+    // Position: top-left inside plot
+    const x0 = plot.x + 6;
+    const y0 = plot.y + 6;
+
+    // Background
+    ctx.fillStyle = "rgba(0,0,0,.28)";
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
+    _roundRectPath(ctx, x0, y0, totalW, totalH, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    // Items
+    let cx = x0 + padX;
+    for(let c=0; c<cols; c++){
+      let cy = y0 + padY + (itemH/2);
+      for(let i=c*itemsPerCol; i<Math.min(players.length, (c+1)*itemsPerCol); i++){
+        const p = players[i];
+        const label = _playerLabel(p);
+
+        // color line
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + lineW, cy);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        ctx.fillText(label, cx + lineW + 8, cy);
+        cy += itemH;
+        if(cy > y0 + totalH - 4) break;
+      }
+      cx += colW[c];
+      if(cx > x0 + totalW - 10) break;
+    }
+
+    ctx.restore();
+  }
+
+  function drawCornerLabel(ctx, plot, text){
+    if(!text) return;
+    ctx.save();
+    ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.fillText(text, plot.x + plot.w - 6, plot.y + 6);
+    ctx.restore();
+  }
+
+function drawLineSeries(canvas, series, yLabelMode, xHintText){
+    // yLabelMode: "total" | "deal" | "rank"
+    const { x:labels, players } = series;
+    if(!canvas || !labels.length || !players.length){
+      clearChart(canvas, "No data");
+      return;
+    }
+    const { ctx, w, h } = fitCanvas(canvas);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = "rgba(0,0,0,.12)";
+    ctx.fillRect(0,0,w,h);
+
+    const padL = 44, padR = 12, padT = 14, padB = 28;
+    const plot = { x: padL, y: padT, w: w - padL - padR, h: h - padT - padB };
+
+    // compute y range
+    let yMin = Infinity, yMax = -Infinity;
+    players.forEach(p => {
+      const arr = (yLabelMode==="total") ? series.totals[p.id]
+               : (yLabelMode==="deal") ? series.perDeal[p.id]
+               : series.ranks[p.id];
+      arr.forEach(v => { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); });
+    });
+    if(!isFinite(yMin) || !isFinite(yMax)){ yMin = 0; yMax = 1; }
+    if(yLabelMode==="rank"){ yMin = 1; yMax = Math.max(yMax, 1); }
+
+    // add some headroom
+    const span = yMax - yMin;
+    if(span === 0){ yMax = yMin + 1; }
+    drawAxes(ctx, plot, labels, Math.round(yMin), Math.round(yMax), true);
+
+    const yMap = makeYMapper(yMin, yMax, plot.y, plot.y + plot.h, true);
+
+    // x map
+    const n = labels.length;
+    const xMap = (i) => plot.x + (plot.w * i / Math.max(1, n-1));
+
+    // lines
+    ctx.lineWidth = 2;
+    players.forEach(p => {
+      const arr = (yLabelMode==="total") ? series.totals[p.id]
+               : (yLabelMode==="deal") ? series.perDeal[p.id]
+               : series.ranks[p.id];
+      ctx.strokeStyle = p.color;
+      ctx.beginPath();
+      arr.forEach((v, i) => {
+        const xx = xMap(i);
+        const yy = yMap(v);
+        if(i===0) ctx.moveTo(xx, yy);
+        else ctx.lineTo(xx, yy);
+      });
+      ctx.stroke();
+    });
+
+    // end labels (avoid overlaps)
+    const labelsInfo = players.map(p => {
+      const arr = (yLabelMode==="total") ? series.totals[p.id]
+               : (yLabelMode==="deal") ? series.perDeal[p.id]
+               : series.ranks[p.id];
+      const v = arr[n-1];
+      return { p, v, x: xMap(n-1), y: yMap(v) };
+    }).sort((a,b) => a.y - b.y);
+
+    const minGap = 12;
+    for(let i=1;i<labelsInfo.length;i++){
+      if(labelsInfo[i].y - labelsInfo[i-1].y < minGap){
+        labelsInfo[i].y = labelsInfo[i-1].y + minGap;
+      }
+    }
+    for(let i=labelsInfo.length-2;i>=0;i--){
+      if(labelsInfo[i+1].y - labelsInfo[i].y < minGap){
+        labelsInfo[i].y = labelsInfo[i+1].y - minGap;
+      }
+    }
+    labelsInfo.forEach(li => {
+      const txt = `${_playerLabel(li.p)} ${li.v}`;
+      ctx.fillStyle = li.p.color;
+      ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      const ty = clamp(li.y, plot.y+8, plot.y+plot.h-8);
+      // keep label on-canvas
+      const tw = ctx.measureText(txt).width;
+      const tx = Math.min(w-6-tw, li.x + 8);
+      ctx.fillText(txt, Math.max(plot.x+6, tx), ty);
+    });
+
+    // x label hint
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(String(xHintText || "Deal #"), plot.x + plot.w/2, h-4);
+  }
+
+  function drawBarDeal(canvas, series, dealNo){
+    const { x:labels, players, perDeal } = series;
+    if(!canvas || !labels.length || !players.length){
+      clearChart(canvas, "No data");
+      return;
+    }
+    const idx = labels.indexOf(dealNo);
+    const useIdx = (idx >= 0) ? idx : Math.max(0, labels.length-1);
+
+    const values = players.map(p => ({ p, v: perDeal[p.id][useIdx] || 0 }));
+    let vmax = 0;
+    values.forEach(o => { vmax = Math.max(vmax, o.v); });
+    vmax = Math.max(1, vmax);
+
+    const { ctx, w, h } = fitCanvas(canvas);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = "rgba(0,0,0,.12)";
+    ctx.fillRect(0,0,w,h);
+
+    const padL=44, padR=12, padT=14, padB=28;
+    const plot={ x:padL, y:padT, w:w-padL-padR, h:h-padT-padB };
+    drawAxes(ctx, plot, [], 0, vmax, false);
+
+
+    const barW = plot.w / Math.max(1, values.length);
+    values.forEach((o, i) => {
+      const bh = (o.v / vmax) * plot.h;
+      const x0 = plot.x + i*barW + 6;
+      const y0 = plot.y + plot.h - bh;
+      const bw = Math.max(6, barW - 12);
+      ctx.fillStyle = o.p.color;
+      ctx.globalAlpha = 0.85;
+      ctx.fillRect(x0, y0, bw, bh);
+      ctx.globalAlpha = 1;
+
+      // name + value
+      ctx.fillStyle = "rgba(255,255,255,.80)";
+      ctx.font = "10px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(String(o.p.name).replace(/^Player\s*\d+\s*/i, ""), x0 + bw/2, plot.y + plot.h + 6);
+
+      ctx.textBaseline = "bottom";
+      ctx.fillText(String(o.v), x0 + bw/2, y0 - 2);
+    });
+
+    // title hint inside
+    ctx.fillStyle = "rgba(255,255,255,.65)";
+    ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("", plot.x+6, plot.y+6);
+
+  }
+
+  function renderCharts(){
+    if(!chartsBooted) return;
+
+    const s = getActiveSession();
+
+    const canvYearTotals = document.getElementById("chartYearTotals");
+    const canvYearWins   = document.getElementById("chartYearWins");
+
+    const canvTotals  = document.getElementById("chartTotals");
+    const canvPerDeal = document.getElementById("chartPerDeal");
+    const canvRanks   = document.getElementById("chartRanks");
+    const canvBars    = document.getElementById("chartBars");
+
+    // Year charts (show even if no active game)
+    const y = getYearForYearCharts();
+    document.querySelectorAll(".yearSpan").forEach(n => { n.textContent = String(y); });
+
+    const yearTotalsDeals = buildYearTotalsOverDealsSeries(y);
+    const yearWinsBar  = buildYearWinsBarSeries(y);
+
+    if(yearTotalsDeals && yearTotalsDeals.x.length && yearTotalsDeals.players.length){
+      drawLineSeries(canvYearTotals, yearTotalsDeals, "total", "Deal #");
+    }else{
+      clearChart(canvYearTotals, "No year data");
+    }
+
+    if(yearWinsBar && yearWinsBar.players.length){
+      drawBarDeal(canvYearWins, yearWinsBar, "Wins");
+    }else{
+      clearChart(canvYearWins, "No year data");
+    }
+
+    // All-time outs (across all saved games)
+    const outsBar = buildAllGamesOutsBarSeries();
+
+    // Game charts
+    if(!s){
+      clearChart(canvTotals, "No game loaded");
+      clearChart(canvPerDeal, "No game loaded");
+      clearChart(canvRanks, "No game loaded");
+      if(outsBar && outsBar.players.length){
+        drawBarDeal(canvBars, outsBar, "Outs");
+      }else{
+        clearChart(canvBars, "No saved games");
+      }
+
+      // Zoom can still show year charts without an active game
+      if(chartZoomOpen && (chartZoomKey === "yearTotals" || chartZoomKey === "yearWins" || chartZoomKey === "bars")){
+        const zoomCanvas = document.getElementById("chartZoomCanvas");
+        const zoomTitle  = document.getElementById("chartZoomTitle");
+        if(zoomCanvas){
+          if(chartZoomKey === "yearTotals"){
+            if(zoomTitle) zoomTitle.textContent = `Year cumulative points over deals (${y})`;
+            drawLineSeries(zoomCanvas, yearTotalsDeals, "total", "Deal #");
+          }else if(chartZoomKey === "yearWins"){
+            if(zoomTitle) zoomTitle.textContent = `Year total wins (${y})`;
+            drawBarDeal(zoomCanvas, yearWinsBar, "Wins");
+          }else if(chartZoomKey === "bars"){
+            if(zoomTitle) zoomTitle.textContent = "Most outs (0s) — all saved games";
+            if(outsBar && outsBar.players.length){
+              drawBarDeal(zoomCanvas, outsBar, "Outs");
+            }else{
+              clearChart(zoomCanvas, "No saved games");
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    const series = buildSeries(s);
+
+    // Draw the four in-panel charts
+    drawLineSeries(canvTotals, series, "total", "Deal #");
+    drawLineSeries(canvPerDeal, series, "deal", "Deal #");
+    drawLineSeries(canvRanks, series, "rank", "Deal #");
+
+    // All-time outs (all saved games)
+    if(outsBar && outsBar.players.length){
+      drawBarDeal(canvBars, outsBar, "Outs");
+    }else{
+      clearChart(canvBars, "No saved games");
+    }
+
+    // If zoom is open, re-render there
+    if(chartZoomOpen){
+      const zoomCanvas = document.getElementById("chartZoomCanvas");
+      const zoomTitle  = document.getElementById("chartZoomTitle");
+      if(zoomCanvas){
+        if(chartZoomKey === "totals"){
+          if(zoomTitle) zoomTitle.textContent = "Total score over deals";
+          drawLineSeries(zoomCanvas, series, "total", "Deal #");
+        }else if(chartZoomKey === "perdeal"){
+          if(zoomTitle) zoomTitle.textContent = "Deal scores (per deal)";
+          drawLineSeries(zoomCanvas, series, "deal", "Deal #");
+        }else if(chartZoomKey === "ranks"){
+          if(zoomTitle) zoomTitle.textContent = "Rank over time (1 = best)";
+          drawLineSeries(zoomCanvas, series, "rank", "Deal #");
+        }else if(chartZoomKey === "bars"){
+          if(zoomTitle) zoomTitle.textContent = "Most outs (0s) — all saved games";
+          if(outsBar && outsBar.players.length){
+            drawBarDeal(zoomCanvas, outsBar, "Outs");
+          }else{
+            clearChart(zoomCanvas, "No saved games");
+          }
+        }else if(chartZoomKey === "yearTotals"){
+          if(zoomTitle) zoomTitle.textContent = `Year cumulative points over deals (${y})`;
+          drawLineSeries(zoomCanvas, yearTotalsDeals, "total", "Deal #");
+        }else if(chartZoomKey === "yearWins"){
+          if(zoomTitle) zoomTitle.textContent = `Year total wins (${y})`;
+          drawBarDeal(zoomCanvas, yearWinsBar, "Wins");
+        }
+      }
+    }
+  }
+
+
+  function init(){
+    bootChartsUI();
+    rebuildPlayerCountSelect();
+
+    el("nightDate").value = todayISO();
+    el("playerCount").value = "4";
+
+    loadRegistry();
+    loadSessions();
+
+    renderRegistry();
+    renderSessionPicker();
+
+    // wire buttons
+    el("newNightBtn").addEventListener("click", startNewGame);
+    el("saveNightBtn").addEventListener("click", saveCurrentGame);
+    el("deleteNightBtn").addEventListener("click", deleteCurrentGame);
+
+    const __autoSeatBtn = el("autoSeatBtn");
+  if (__autoSeatBtn) __autoSeatBtn.addEventListener("click", autoSeat);
+el("applySeatingBtn").addEventListener("click", applySeating);
+
+    el("deleteAllBtn").addEventListener("click", deleteAllSaved);
+
+    el("exportBtn").addEventListener("click", exportData);
+    el("importBtn").addEventListener("click", () => el("importFile").click());
+    
+  function _pxPerMm(){
+    const d = document.createElement("div");
+    d.style.width = "100mm";
+    d.style.position = "absolute";
+    d.style.visibility = "hidden";
+    d.style.left = "-9999px";
+    document.body.appendChild(d);
+    const px = d.getBoundingClientRect().width;
+    d.remove();
+    return px / 100;
+  }
+
+  function _computePrintZoom(){
+    // A4 portrait: 210mm x 297mm
+    const marginMm = 12;
+    const ppm = _pxPerMm();
+    const pageW = (210 - (marginMm * 2)) * ppm;
+    const pageH = (297 - (marginMm * 2)) * ppm;
+
+    const headerEl = document.querySelector("header");
+    const mainEl = document.querySelector("main");
+    const h = (headerEl ? headerEl.scrollHeight : 0) + (mainEl ? mainEl.scrollHeight : 0);
+    const w = Math.max(
+      headerEl ? headerEl.scrollWidth : 0,
+      mainEl ? mainEl.scrollWidth : 0,
+      document.documentElement.scrollWidth
+    );
+
+    if(!w || !h) return 1;
+
+    const zw = pageW / w;
+    const zh = pageH / h;
+    let z = Math.min(zw, zh, 1);
+    z *= 0.98;
+    if(z < 0.55) z = 0.55;
+    return z;
+  }
+
+  let _printingPrepared = false;
+
+  function _enterPrintingMode(){
+    if(_printingPrepared) return;
+    _printingPrepared = true;
+    document.body.classList.add("printing");
+
+    // Let layout settle, then compute best zoom
+    requestAnimationFrame(() => {
+      try{
+        const z = _computePrintZoom();
+        document.documentElement.style.setProperty("--printZoom", String(z));
+      }catch(_){
+        document.documentElement.style.setProperty("--printZoom", "0.85");
+      }
+    });
+  }
+
+  function _exitPrintingMode(){
+    if(!_printingPrepared) return;
+    document.body.classList.remove("printing");
+    document.documentElement.style.removeProperty("--printZoom");
+    _printingPrepared = false;
+  }
+
+  window.addEventListener("afterprint", _exitPrintingMode);
+
+  window.addEventListener("beforeprint", () => {
+    // If user uses Ctrl+P, still apply the print-fit zoom.
+    _enterPrintingMode();
+  });
+
+  
+
+  el("printBtn").addEventListener("click", () => {
+    _enterPrintingMode();
+    setTimeout(() => window.print(), 60);
+  });
+
+    el("importFile").addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if(f) importDataFromFile(f);
+      e.target.value = "";
+    });
+
+    // live selectors (Big Step B requirement)
+    el("playerCount").addEventListener("change", onPlayerCountChanged);
+    el("startDealer").addEventListener("change", onStartDealerChanged);
+
+    window.addEventListener("resize", () => {
+      if(kpState.open) positionKeypadToStats();
+      renderCharts();
+    });
+
+    // load latest game if exists, else blank
+    if(sessions.length){
+      const latest = sessions[0];
+      loadGameById(latest.id);
+    }else{
+      setGamePill();
+      renderSeatingGrid(null);
+      renderSheet();
+      renderYearStats();
+      renderExtraStats();
+    }
+  }
+
+  init();
 })();
 </script>
+
+<div id="chartZoomOverlay" class="hidden" aria-hidden="true">
+  <div class="chartZoomPanel" role="dialog" aria-modal="true" aria-label="Chart zoom">
+    <div class="chartZoomHead">
+      <div class="chartZoomTitle" id="chartZoomTitle">Chart</div>
+      <button class="modalCloseBtn" id="chartZoomClose" type="button">Close</button>
+    </div>
+    <canvas id="chartZoomCanvas" aria-label="Zoomed chart"></canvas>
+  </div>
+</div>
+
 </body>
 </html>
